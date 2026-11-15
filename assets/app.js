@@ -55,11 +55,32 @@
       .replace(/"/g, "&quot;");
   }
   /* 题干转 HTML：填空位显示成下划线占位 */
+  /* 公式渲染总入口：$...$ 包起来的部分交给 KaTeX 做印刷体数学排版，
+     其余文字继续走下面的角标规则。人工修订的公式就用 $ 包 LaTeX 写（见 tools/extract_hw.py 的 FIX_* 表）。 */
+  function katexSpan(tex) {
+    if (typeof katex === "undefined" || !katex || !katex.renderToString) return esc(tex);
+    try {
+      return katex.renderToString(tex, { throwOnError: false, errorColor: "#cc0000" });
+    } catch (e) {
+      return esc(tex);
+    }
+  }
+  function mathHtml(s) {
+    var str = String(s == null ? "" : s);
+    if (str.indexOf("$") < 0) return mathPlain(str);
+    var out = "", last = 0, m, re = /\$([^$]+)\$/g;
+    while ((m = re.exec(str)) !== null) {
+      out += mathPlain(str.slice(last, m.index));
+      out += katexSpan(m[1]);
+      last = m.index + m[0].length;
+    }
+    return out + mathPlain(str.slice(last));
+  }
   /* 公式角标还原。
      PDF 文字层里 d₁、σ_b 这类角标都是平排的普通字符（σ 和 b 之间还有排版空格），
      直接显示就是 "σ b =540N/mm2" 这种样子，这里按机械设计的常见写法还原。
      数据里也能写 _{..} / ^{..} 精确指定（人工修订的公式用这个，见 tools/extract_hw.py 的 FIX_* 表）。 */
-  function mathHtml(s) {
+  function mathPlain(s) {
     var t = esc(s);
     // 0) 单位里的平方 —— 必须最先做，否则 m2 会被下一条规则当成下标
     t = t.replace(/N\/mm2/g, "N/mm<sup>2</sup>")
