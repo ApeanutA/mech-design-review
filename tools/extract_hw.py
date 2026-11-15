@@ -106,6 +106,65 @@ def split_answers(blob, n_expected):
     return out
 
 
+# ============================================================
+# 人工修订表
+#   PDF 文字层里的公式是排版"画"出来的，提取出来字符顺序会乱、
+#   希腊字母会丢（第15章选择2 的 M_ca=√(M²+(αT)²) 提取成 "( ) T M M ca α + ="）。
+#   这类没法用规则自动还原，逐条人工校正。
+#   公式里的角标写 _{..} / ^{..}，由前端渲染成 <sub> / <sup>。
+# ============================================================
+FIX_STEM = {
+    (15, "choice", 2):
+        "求计算弯矩 M_{ca} = √(M^{2} + (αT)^{2}) 时，α 是根据转矩性质而定的转化系数，"
+        "当承受的转矩是对称循环时，α = ＿＿＿。",
+    # 寿命指数 ε 是 (C/P) 的上标，文字层里跟 P 排在一行
+    (13, "choice", 14):
+        "滚动轴承额定寿命与额定动载荷之间的关系为 L = (C/P)^{ε}，其中 P 为轴承的       。",
+    (13, "choice", 15):
+        "滚动轴承额定寿命与额定动载荷之间具有如下关系 L = (C/P)^{ε}，其中 ε 称为寿命指数，"
+        "对于滚子轴承和球轴承分别为             。",
+}
+FIX_OPTION = {
+    # 欧拉公式 e^{fα} 被提取成了 "e fα"
+    (8, "choice", 4, "C"): "F_{1}/F_{2} = e^{fα}",
+    (8, "choice", 4, "D"): "1 < F_{1}/F_{2} < e^{fα}",
+    # 原卷是 q = d₁·m，间隔号在文字层里丢了
+    (11, "choice", 4, "B"): "q = d_{1}·m",
+}
+FIX_ANSWER = {
+    # 原卷"屈服极限 σs；强度极限 σb"，σ 在文字层里丢了
+    (3, "blank", 4): "屈服极限 σ_{s}；强度极限 σ_{b}。",
+    # 这题是纯公式推导，文字层里彻底散架
+    # （提取出来是 "=ε16667⁄◊⁄⎜⎝⎛=PCnLhΘ16667⁄◊⁄⎜⎝⎛=PCnLh=∴hhLL"），
+    # 与其显示乱码不如直接指向原图
+    (13, "short", 2): "（这题是公式推导，文字层里散架了 —— 请看上面的原书答案图。）",
+}
+
+
+def apply_fixes(chapters):
+    """把人工修订表套到解析结果上，并重算受影响的 answer_keys。"""
+    n = 0
+    for ch in chapters:
+        for s in ch["sections"]:
+            for q in s["questions"]:
+                k = (ch["no"], s["kind"], q["no"])
+                if k in FIX_STEM:
+                    q["stem"] = FIX_STEM[k]
+                    n += 1
+                if k in FIX_ANSWER:
+                    q["answer"] = FIX_ANSWER[k]
+                    n += 1
+                    if s["kind"] == "choice":
+                        q["answer_keys"] = re.findall(r"[A-D]", q["answer"])
+                for o in q.get("options", []):
+                    ok = (ch["no"], s["kind"], q["no"], o["key"])
+                    if ok in FIX_OPTION:
+                        o["text"] = FIX_OPTION[ok]
+                        n += 1
+    print("人工修订:", n, "处")
+    return n
+
+
 def main():
     rows = page_lines(HW)
 
@@ -252,6 +311,9 @@ def main():
                     q["answer_keys"] = re.findall(r"[A-D]", a)
                 if not a:
                     missing.append((ch["no"], s["kind"], q["no"]))
+
+    # ---- 5.5 人工修订（公式在文字层里被打散，规则救不回来）----
+    apply_fixes(chapters)
 
     # ---- 6. 输出 ----
     out = {"chapters": chapters}

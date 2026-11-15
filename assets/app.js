@@ -55,8 +55,47 @@
       .replace(/"/g, "&quot;");
   }
   /* 题干转 HTML：填空位显示成下划线占位 */
-  function stemHtml(s) {
+  /* 公式角标还原。
+     PDF 文字层里 d₁、σ_b 这类角标都是平排的普通字符（σ 和 b 之间还有排版空格），
+     直接显示就是 "σ b =540N/mm2" 这种样子，这里按机械设计的常见写法还原。
+     数据里也能写 _{..} / ^{..} 精确指定（人工修订的公式用这个，见 tools/extract_hw.py 的 FIX_* 表）。 */
+  function mathHtml(s) {
     var t = esc(s);
+    // 0) 单位里的平方 —— 必须最先做，否则 m2 会被下一条规则当成下标
+    t = t.replace(/N\/mm2/g, "N/mm<sup>2</sup>")
+         .replace(/mm2/g, "mm<sup>2</sup>")
+         .replace(/cm2/g, "cm<sup>2</sup>");
+    // 1) 人工指定的 _{..} / ^{..}
+    t = t.replace(/_\{([^}]*)\}/g, "<sub>$1</sub>")
+         .replace(/\^\{([^}]*)\}/g, "<sup>$1</sup>");
+    // 2) σmax / σmin —— 要排在「希腊字母+单字母」之前，否则会被切成 σ_m ax
+    t = t.replace(/([στεαβδλφηωγθμνρ])\s?(max|min)(?![A-Za-z])/g, "$1<sub>$2</sub>");
+    // 3) 希腊字母 + 下标字母（可带数字）：σ b → σ_b、σF1 → σ_F1
+    t = t.replace(/([στεαβδλφηωγθμνρ])\s?([A-Za-z])(\d{0,3})(?![0-9A-Za-z])/g,
+      function (m, g, l, d) { return g + "<sub>" + l + d + "</sub>"; });
+    // 4) 希腊字母 + 数字：α1 → α_1、δ1 → δ_1、σ 0 → σ_0
+    t = t.replace(/([στεαβδλφηωγθμνρ])\s?(\d+)(?![0-9A-Za-z])/g, "$1<sub>$2</sub>");
+    // 4b) 希腊字母 + 带符号数字：σ-1（对称循环疲劳极限）、σ+1
+    t = t.replace(/([στεαβδλφηωγθμνρ])\s?([-+]\d+)(?![0-9A-Za-z])/g, "$1<sub>$2</sub>");
+    // 5a) 拉丁字母 + 数字 + m：z1m → z_1 m、d1m → d_1 m
+    //     只认尾随的 m（数字后面跟的那个 m 是独立变量），放宽会把 ZCuSn10P1 这类牌号切坏
+    t = t.replace(/(?<![0-9])([A-LN-Za-ln-z])(\d{1,2})(m)(?![a-zA-Z])/g,
+      function (m0, l, d, tail) { return l + "<sub>" + d + "</sub>" + tail; });
+    // 5) 拉丁字母 + 数字：d1 → d_1、F0 → F_0、HBW1 → HBW_1
+    //    只认 1~2 位数字，否则 HT200 / Q235 这类牌号会被切开；
+    //    (?<![0-9]) 是为了放过 ZCuSn10P1 这类牌号里的「10P1」。
+    //    跳过 M/m：M12、M16 是螺纹规格，m 单独作模数时另有写法，都不是下标
+    t = t.replace(/(?<![0-9])([A-LN-Za-ln-z])(\d{1,2})(?![0-9A-Za-z])/g, "$1<sub>$2</sub>");
+    // 5b) V 带小带轮的最小直径 dd1min —— 整个 d1min 都是下标
+    t = t.replace(/\bdd1min\b/g, "d<sub>d1min</sub>");
+    // 6) 少数固定的双字母下标：Cb/Cm（螺栓与被联接件的刚度）、KA/KV（齿轮载荷系数）、Lh（轴承寿命）
+    t = t.replace(/\bC([bm])(?![A-Za-z])/g, "C<sub>$1</sub>")
+         .replace(/\bK([AV])(?![A-Za-z])/g, "K<sub>$1</sub>")
+         .replace(/\bL(h)(?![A-Za-z])/g, "L<sub>$1</sub>");
+    return t;
+  }
+  function stemHtml(s) {
+    var t = mathHtml(s);
     t = t.replace(/[＿_]{2,}/g, '<span class="bk"></span>');
     t = t.replace(/ {3,}/g, '<span class="bk"></span>');
     return t;
@@ -337,7 +376,7 @@
         ansBox.textContent = "（原书此处无参考答案）";
       } else {
         ansBox.className = "ans";
-        ansBox.innerHTML = "<b>答案：</b>" + esc(q.answer);
+        ansBox.innerHTML = "<b>答案：</b>" + mathHtml(q.answer);
       }
       ansBox.classList.remove("hidden");
     }
@@ -359,7 +398,9 @@
       q.options.forEach(function (o) {
         var b = h("button", "opt");
         b.appendChild(h("span", "k", o.key));
-        b.appendChild(h("span", "v", o.text));
+        var vspan = h("span", "v");
+        vspan.innerHTML = mathHtml(o.text);
+        b.appendChild(vspan);
         b.onclick = function () {
           if (b.classList.contains("locked")) return;
           if (!multi) {
@@ -402,7 +443,7 @@
         tip.style.marginTop = "10px";
         tip.innerHTML = ok
           ? '<span class="tag-ok">✓ 正确</span>'
-          : '<span class="tag-bad">✗ 错，正确答案是 ' + esc(q.answer) + "</span>";
+          : '<span class="tag-bad">✗ 错，正确答案是 ' + mathHtml(q.answer) + "</span>";
         card.appendChild(tip);
         showAnswer();
         afterAnswer(ok);
@@ -431,7 +472,7 @@
           var tip = h("div", "small");
           tip.style.marginTop = "10px";
           tip.innerHTML = ok ? '<span class="tag-ok">✓ 正确</span>'
-            : '<span class="tag-bad">✗ 错，正确答案是 ' + esc(q.answer) + "</span>";
+            : '<span class="tag-bad">✗ 错，正确答案是 ' + mathHtml(q.answer) + "</span>";
           card.appendChild(tip);
           showAnswer();
           afterAnswer(ok);
