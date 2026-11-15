@@ -1,19 +1,30 @@
 # 机械设计 · 期末复习
 
-一个离线网页小工具：**分章节刷小题 + 随机抽题训练 + 错题本 + 期末大题原图**。
+一个网页小工具：**分章节刷小题 + 随机抽题训练 + 错题本 + 期末大题原图**。
 
-## 怎么打开
+## 在哪打开
 
-双击 `index.html`（Chrome / Edge 都可以）。不需要联网，不需要装东西。
+| 方式 | 地址 | 说明 |
+|---|---|---|
+| 手机 / 平板 | http://172.30.212.117:8000/ | 连同一个 WiFi，要先起本地服务 |
+| 电脑本机 | http://127.0.0.1:8000/ | 同上 |
+| 线上 | https://apeanuta.github.io/mech-design-review/ | 随时能开，也可以发链接给同学 |
+| 离线 | 双击 `index.html` | 不用联网、不用起服务 |
 
-做题进度（做过哪些题、对错、收藏）存在浏览器本地。换浏览器或清了缓存会丢。
+> 本地那个 IP 是**当前** WLAN 的地址，换网络会变。查法：`ipconfig` 里「WLAN」那条的 IPv4。
 
-> 如果发现进度不保存（个别浏览器对 `file://` 的本地存储有限制），改用本地服务方式打开：
-> ```bash
-> cd 机械设计复习
-> python -m http.server 8080
-> ```
-> 然后浏览器打开 http://127.0.0.1:8080
+做题进度（做过哪些题、对错、收藏）存在**浏览器本地**，每台设备各存各的、不互通；
+换浏览器或清了缓存会丢。
+
+## 起本地服务
+
+```bash
+cd 机械设计复习
+"C:/Users/31065/.dsh/dsh-runtimes/dsh-primary-runtime/dependencies/python/python.exe" -m http.server 8000 --bind 0.0.0.0
+```
+
+> 别用 8080：那个端口被 DSH 自己的 CEF 调试服务占着（绑在 127.0.0.1），
+> 两个进程抢一个端口会让 `127.0.0.1:8080` 打开的是调试页而不是这个工具。
 
 ## 有什么功能
 
@@ -29,6 +40,12 @@
 
 - 多选题（答案有多个空）会自动变成「依次选够 N 个再提交」
 - 每题右上角可以 ☆ 收藏；做错的自动进错题本
+
+**✍️ 填空/简答题的「原书答案」原图**
+填空题和简答题的答案里有公式，而公式在 PDF 文字层里是碎的——
+第 5 章填空 1 的 $\tan\lambda/\tan(\lambda+\varphi_v)$ 提出来会变成 `)tan(tanvφλλ+`。
+所以这两类题（共 118 道）除文字外，还配了一张**从原卷裁下来的答案图**，
+公式以原图为准；碎掉的文字版收在下面一个折叠里，要复制时再展开。
 
 **🎯 抽题训练**
 自己选章节范围、题型、题量（10/20/30/50/全部），随机抽一套做一遍，做完出成绩并列出本轮错题。
@@ -61,13 +78,15 @@
 │  ├─ app.css
 │  └─ app.js
 ├─ data/
-│  ├─ questions.js      ← 295 道小题（网页直接读这个）
+│  ├─ questions.js      ← 295 道小题 + 答案图索引（网页直接读这个）
 │  ├─ examples.js       ← 例题索引
 │  ├─ questions.json    ← 同上，JSON 原始数据
 │  ├─ examples.json
 │  ├─ example_index.json
+│  ├─ answer_imgs.json  ← 答案小图的尺寸索引
 │  └─ hw_raw.txt        ← 习题 PDF 抽出的原始文字（备查）
-├─ img/ex/              ← 66 页例题原图（WebP，共 6.5 MB）
+├─ img/ex/              ← 66 页例题原图（WebP，6.5 MB）
+├─ img/ans/             ← 118 张填空/简答答案小图（WebP，1.3 MB）
 ├─ screenshots/
 └─ tools/               ← 数据是怎么从 PDF 变出来的（可重跑）
 ```
@@ -91,7 +110,11 @@ export PYTHONIOENCODING=utf-8
 
 "$PY" tools/probe.py            # 看 PDF 结构
 "$PY" tools/extract_hw.py       # 习题 -> data/questions.json
+"$PY" tools/verify_answers.py   # 查答案字段有没有异常
+"$PY" tools/verify_map.py       # 独立重扫答案区，核对每题号都对得上
+"$PY" tools/check_judge.py      # 判断题 √/× 逐字对照 PDF 原文
 "$PY" tools/index_examples.py   # 例题页码索引
 "$PY" tools/render_examples.py  # 例题渲染成 WebP（SKIP_RENDER=1 可只重建索引）
+"$PY" tools/render_answers.py   # 填空/简答答案裁剪成小图
 "$PY" tools/pack_data.py        # JSON -> 网页用的 .js
 ```
