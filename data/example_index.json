@@ -1,0 +1,1022 @@
+{
+ "all_ranges": {
+  "3-1": [
+   3,
+   3
+  ],
+  "3-2": [
+   4,
+   4
+  ],
+  "3-3": [
+   5,
+   5
+  ],
+  "3-4": [
+   6,
+   7
+  ],
+  "3-5": [
+   8,
+   8
+  ],
+  "5-1": [
+   10,
+   10
+  ],
+  "5-2": [
+   11,
+   11
+  ],
+  "5-3": [
+   12,
+   12
+  ],
+  "5-4": [
+   13,
+   13
+  ],
+  "5-5": [
+   14,
+   14
+  ],
+  "5-6": [
+   15,
+   15
+  ],
+  "5-7": [
+   16,
+   17
+  ],
+  "5-8": [
+   18,
+   19
+  ],
+  "5-9": [
+   21,
+   23
+  ],
+  "5-10": [
+   20,
+   20
+  ],
+  "10-1": [
+   25,
+   25
+  ],
+  "10-2": [
+   26,
+   27
+  ],
+  "10-3": [
+   28,
+   29
+  ],
+  "10-4": [
+   30,
+   32
+  ],
+  "10-5": [
+   33,
+   33
+  ],
+  "10-6": [
+   34,
+   35
+  ],
+  "10-7": [
+   36,
+   36
+  ],
+  "10-8": [
+   37,
+   37
+  ],
+  "10-9": [
+   38,
+   40
+  ],
+  "10-10": [
+   41,
+   43
+  ],
+  "10-11": [
+   44,
+   44
+  ],
+  "11-1": [
+   46,
+   49
+  ],
+  "11-2": [
+   50,
+   50
+  ],
+  "11-3": [
+   51,
+   51
+  ],
+  "13-1": [
+   53,
+   53
+  ],
+  "13-2": [
+   54,
+   54
+  ],
+  "13-3": [
+   55,
+   55
+  ],
+  "13-4": [
+   56,
+   57
+  ],
+  "15-1": [
+   59,
+   60
+  ],
+  "15-2": [
+   61,
+   62
+  ],
+  "15-3": [
+   63,
+   66
+  ]
+ },
+ "wanted": [
+  {
+   "chapter": 3,
+   "example": 1,
+   "pages": [
+    3
+   ]
+  },
+  {
+   "chapter": 3,
+   "example": 4,
+   "pages": [
+    6,
+    7
+   ]
+  },
+  {
+   "chapter": 5,
+   "example": 4,
+   "pages": [
+    13
+   ]
+  },
+  {
+   "chapter": 5,
+   "example": 5,
+   "pages": [
+    14
+   ]
+  },
+  {
+   "chapter": 5,
+   "example": 6,
+   "pages": [
+    15
+   ]
+  },
+  {
+   "chapter": 5,
+   "example": 7,
+   "pages": [
+    16,
+    17
+   ]
+  },
+  {
+   "chapter": 10,
+   "example": 1,
+   "pages": [
+    25
+   ]
+  },
+  {
+   "chapter": 10,
+   "example": 2,
+   "pages": [
+    26,
+    27
+   ]
+  },
+  {
+   "chapter": 10,
+   "example": 4,
+   "pages": [
+    30,
+    31,
+    32
+   ]
+  },
+  {
+   "chapter": 10,
+   "example": 5,
+   "pages": [
+    33
+   ]
+  },
+  {
+   "chapter": 10,
+   "example": 8,
+   "pages": [
+    37
+   ]
+  },
+  {
+   "chapter": 11,
+   "example": 1,
+   "pages": [
+    46,
+    47,
+    48,
+    49
+   ]
+  },
+  {
+   "chapter": 11,
+   "example": 2,
+   "pages": [
+    50
+   ]
+  },
+  {
+   "chapter": 13,
+   "example": 1,
+   "pages": [
+    53
+   ]
+  },
+  {
+   "chapter": 13,
+   "example": 3,
+   "pages": [
+    55
+   ]
+  }
+ ],
+ "pages_needed": [
+  3,
+  6,
+  7,
+  13,
+  14,
+  15,
+  16,
+  17,
+  25,
+  26,
+  27,
+  30,
+  31,
+  32,
+  33,
+  37,
+  46,
+  47,
+  48,
+  49,
+  50,
+  53,
+  55
+ ],
+ "page_meta": [
+  {
+   "page": 1,
+   "chap_title": null,
+   "examples": [],
+   "head": [
+    "机械设计",
+    "例题汇总"
+   ],
+   "chapter": null
+  },
+  {
+   "page": 2,
+   "chap_title": 3,
+   "examples": [],
+   "head": [
+    "第3章",
+    "机械零件的强度"
+   ],
+   "chapter": 3
+  },
+  {
+   "page": 3,
+   "chap_title": null,
+   "examples": [
+    1
+   ],
+   "head": [
+    "3",
+    "例题1：某零件材料             ，            ，       ，"
+   ],
+   "chapter": 3
+  },
+  {
+   "page": 4,
+   "chap_title": null,
+   "examples": [
+    2
+   ],
+   "head": [
+    "4",
+    "例题2：一优质碳素结构钢零件："
+   ],
+   "chapter": 3
+  },
+  {
+   "page": 5,
+   "chap_title": null,
+   "examples": [
+    3
+   ],
+   "head": [
+    "5",
+    "例题3：一曲柄受脉动循环载荷作用，在A—A剖面处有最大弯"
+   ],
+   "chapter": 3
+  },
+  {
+   "page": 6,
+   "chap_title": null,
+   "examples": [
+    4
+   ],
+   "head": [
+    "A′(0, σ－1)",
+    "C(σs,0)"
+   ],
+   "chapter": 3
+  },
+  {
+   "page": 7,
+   "chap_title": null,
+   "examples": [],
+   "head": [
+    "7",
+    "③"
+   ],
+   "chapter": 3
+  },
+  {
+   "page": 8,
+   "chap_title": null,
+   "examples": [
+    5
+   ],
+   "head": [
+    "8",
+    "例题5：已知某钢制零件在应力循环基数"
+   ],
+   "chapter": 3
+  },
+  {
+   "page": 9,
+   "chap_title": 5,
+   "examples": [],
+   "head": [
+    "第5章",
+    "螺纹连接"
+   ],
+   "chapter": 5
+  },
+  {
+   "page": 10,
+   "chap_title": null,
+   "examples": [
+    1
+   ],
+   "head": [
+    "10",
+    "例1. 如图所示为受轴向工作载荷的紧螺栓连接工作时力和变形的关系。"
+   ],
+   "chapter": 5
+  },
+  {
+   "page": 11,
+   "chap_title": null,
+   "examples": [
+    2
+   ],
+   "head": [
+    "例2.内径为D的气缸， 已知缸内气压为p，通过强度计算，连接缸盖与缸体需",
+    "用16个M16或10个M20的螺栓，若要求单个螺栓的预紧力 F0=1.5F（F为单个螺栓"
+   ],
+   "chapter": 5
+  },
+  {
+   "page": 12,
+   "chap_title": null,
+   "examples": [
+    3
+   ],
+   "head": [
+    "12",
+    "例3.如图一圆桶形压力容器的顶盖用M16（d1=13.835mm）螺栓连接。已知螺栓的"
+   ],
+   "chapter": 5
+  },
+  {
+   "page": 13,
+   "chap_title": null,
+   "examples": [
+    4
+   ],
+   "head": [
+    "例4.方形盖板用4个M16的螺钉（d1=13.835mm）与箱体连接，盖板中心O点装有",
+    "吊环，已知R=20KN，螺栓的许用应力[σ]=120MPa,F1=0.6F (F为工作拉力)。"
+   ],
+   "chapter": 5
+  },
+  {
+   "page": 14,
+   "chap_title": null,
+   "examples": [
+    5
+   ],
+   "head": [
+    "14",
+    "例5.如图所示的机座，受到一旋转力矩T = 400Nm的作用，机座底部用6个普"
+   ],
+   "chapter": 5
+  },
+  {
+   "page": 15,
+   "chap_title": null,
+   "examples": [
+    6
+   ],
+   "head": [
+    "15",
+    "例6.一支架用四个螺栓固定于铅垂的墙上，已知如图，支架底与墙之间的摩擦"
+   ],
+   "chapter": 5
+  },
+  {
+   "page": 16,
+   "chap_title": null,
+   "examples": [
+    7
+   ],
+   "head": [
+    "16",
+    "例7.已知一支架用一组螺栓与机座连接，如图，所受外载荷分解为一轴向工"
+   ],
+   "chapter": 5
+  },
+  {
+   "page": 17,
+   "chap_title": null,
+   "examples": [
+    7
+   ],
+   "head": [
+    "17",
+    "例7.已知一支架用一组螺栓与机座连接，如图，所受外载荷分解为"
+   ],
+   "chapter": 5
+  },
+  {
+   "page": 18,
+   "chap_title": null,
+   "examples": [
+    8
+   ],
+   "head": [
+    "18",
+    "例8.一厚度δ的钢板用4个配合螺栓固连在厚度δ1的铸铁支架上,螺栓的"
+   ],
+   "chapter": 5
+  },
+  {
+   "page": 19,
+   "chap_title": null,
+   "examples": [],
+   "head": [
+    "19",
+    "（a）分析方案a 中螺栓所受的横向载荷："
+   ],
+   "chapter": 5
+  },
+  {
+   "page": 20,
+   "chap_title": null,
+   "examples": [
+    10
+   ],
+   "head": [
+    "20",
+    "（b）分析方案b 中螺栓所受的横向载荷："
+   ],
+   "chapter": 5
+  },
+  {
+   "page": 21,
+   "chap_title": null,
+   "examples": [
+    9
+   ],
+   "head": [
+    "21",
+    "例9.如图一固定在钢制立柱上的铸铁托架，总载荷F∑=4800N， σs=240MPa ，"
+   ],
+   "chapter": 5
+  },
+  {
+   "page": 22,
+   "chap_title": null,
+   "examples": [],
+   "head": [
+    "22",
+    "1"
+   ],
+   "chapter": 5
+  },
+  {
+   "page": 23,
+   "chap_title": null,
+   "examples": [],
+   "head": [
+    "23",
+    "2)  保证接合面不分离，使σpmin>0"
+   ],
+   "chapter": 5
+  },
+  {
+   "page": 24,
+   "chap_title": 10,
+   "examples": [],
+   "head": [
+    "第10章",
+    "齿轮传动"
+   ],
+   "chapter": 10
+  },
+  {
+   "page": 25,
+   "chap_title": null,
+   "examples": [
+    1
+   ],
+   "head": [
+    "25",
+    "例1.一对标准直齿圆柱齿轮传动，材料均相同，Z1=19，Z2=88，"
+   ],
+   "chapter": 10
+  },
+  {
+   "page": 26,
+   "chap_title": null,
+   "examples": [
+    2
+   ],
+   "head": [
+    "26",
+    "例2：在如图所示的三个圆柱齿轮传动中，若1、3两轮的齿数相"
+   ],
+   "chapter": 10
+  },
+  {
+   "page": 27,
+   "chap_title": null,
+   "examples": [],
+   "head": [
+    "27",
+    "1"
+   ],
+   "chapter": 10
+  },
+  {
+   "page": 28,
+   "chap_title": null,
+   "examples": [
+    3
+   ],
+   "head": [
+    "28",
+    "例3：如图示，因工作需要，拟加一过轮3，来增大输入轴与输出轴的中心距。"
+   ],
+   "chapter": 10
+  },
+  {
+   "page": 29,
+   "chap_title": null,
+   "examples": [],
+   "head": [
+    "29",
+    "t"
+   ],
+   "chapter": 10
+  },
+  {
+   "page": 30,
+   "chap_title": null,
+   "examples": [
+    4
+   ],
+   "head": [
+    "30",
+    "例4：有两对闭式直齿圆柱齿轮外啮合传动，其参数为，Z1=20，"
+   ],
+   "chapter": 10
+  },
+  {
+   "page": 31,
+   "chap_title": null,
+   "examples": [],
+   "head": [
+    "31",
+    "解："
+   ],
+   "chapter": 10
+  },
+  {
+   "page": 32,
+   "chap_title": null,
+   "examples": [],
+   "head": [
+    "32",
+    "故只比较1、3两齿轮即可"
+   ],
+   "chapter": 10
+  },
+  {
+   "page": 33,
+   "chap_title": null,
+   "examples": [
+    5
+   ],
+   "head": [
+    "33",
+    "例5.图为展开式标准直齿圆柱齿轮减速传动，高速级与低速级的齿数比相等u ="
+   ],
+   "chapter": 10
+  },
+  {
+   "page": 34,
+   "chap_title": null,
+   "examples": [
+    6
+   ],
+   "head": [
+    "34",
+    "例6：如图所示为两级标准斜齿圆柱齿轮传动的减速器。已知齿轮2的参数"
+   ],
+   "chapter": 10
+  },
+  {
+   "page": 35,
+   "chap_title": null,
+   "examples": [],
+   "head": [
+    "35",
+    "β"
+   ],
+   "chapter": 10
+  },
+  {
+   "page": 36,
+   "chap_title": null,
+   "examples": [
+    7
+   ],
+   "head": [
+    "36",
+    "例7.设有一对标准直齿圆柱齿轮,已知齿轮的"
+   ],
+   "chapter": 10
+  },
+  {
+   "page": 37,
+   "chap_title": null,
+   "examples": [
+    8
+   ],
+   "head": [
+    "37",
+    "例8.一对标准直齿圆柱齿轮传动，参数见表。试问："
+   ],
+   "chapter": 10
+  },
+  {
+   "page": 38,
+   "chap_title": null,
+   "examples": [
+    9
+   ],
+   "head": [
+    "38",
+    "例9.有两对闭式直齿圆柱齿轮传动，其尺寸列于下表，齿轮的制造精度和工作"
+   ],
+   "chapter": 10
+  },
+  {
+   "page": 39,
+   "chap_title": null,
+   "examples": [],
+   "head": [
+    "39",
+    "解：❶"
+   ],
+   "chapter": 10
+  },
+  {
+   "page": 40,
+   "chap_title": null,
+   "examples": [],
+   "head": [
+    "40",
+    "❷"
+   ],
+   "chapter": 10
+  },
+  {
+   "page": 41,
+   "chap_title": null,
+   "examples": [
+    10
+   ],
+   "head": [
+    "41",
+    "例10.已知如图， Z1=Z3=20,i12=3, n1=1450rpm,模数均为m=3mm，"
+   ],
+   "chapter": 10
+  },
+  {
+   "page": 42,
+   "chap_title": null,
+   "examples": [],
+   "head": [
+    "42",
+    "解：❶"
+   ],
+   "chapter": 10
+  },
+  {
+   "page": 43,
+   "chap_title": null,
+   "examples": [],
+   "head": [
+    "43",
+    "❷"
+   ],
+   "chapter": 10
+  },
+  {
+   "page": 44,
+   "chap_title": null,
+   "examples": [
+    11
+   ],
+   "head": [
+    "44",
+    "例11：两级圆柱齿轮传动中，若有一级为斜齿另一级为直齿，试问"
+   ],
+   "chapter": 10
+  },
+  {
+   "page": 45,
+   "chap_title": 11,
+   "examples": [],
+   "head": [
+    "第11章",
+    "蜗杆传动"
+   ],
+   "chapter": 11
+  },
+  {
+   "page": 46,
+   "chap_title": null,
+   "examples": [
+    1
+   ],
+   "head": [
+    "46",
+    "例1：在图示的提升机构中，重物G悬挂于钢丝绳上，卷筒"
+   ],
+   "chapter": 11
+  },
+  {
+   "page": 47,
+   "chap_title": null,
+   "examples": [],
+   "head": [
+    "47",
+    "G"
+   ],
+   "chapter": 11
+  },
+  {
+   "page": 48,
+   "chap_title": null,
+   "examples": [],
+   "head": [
+    "48",
+    "G"
+   ],
+   "chapter": 11
+  },
+  {
+   "page": 49,
+   "chap_title": null,
+   "examples": [],
+   "head": [
+    "49",
+    "G"
+   ],
+   "chapter": 11
+  },
+  {
+   "page": 50,
+   "chap_title": null,
+   "examples": [
+    2
+   ],
+   "head": [
+    "50",
+    "例2.图示为蜗杆起重装置。已知：蜗杆头数z1=1，模数m=5mm，"
+   ],
+   "chapter": 11
+  },
+  {
+   "page": 51,
+   "chap_title": null,
+   "examples": [
+    3
+   ],
+   "head": [
+    "51",
+    "n7(6)"
+   ],
+   "chapter": 11
+  },
+  {
+   "page": 52,
+   "chap_title": 13,
+   "examples": [],
+   "head": [
+    "第13章",
+    "滚动轴承"
+   ],
+   "chapter": 13
+  },
+  {
+   "page": 53,
+   "chap_title": null,
+   "examples": [
+    1
+   ],
+   "head": [
+    "53",
+    "例1.已知如图。根据工作条件选用7307AC轴承，C = 32.75KN，如图示。轴颈直"
+   ],
+   "chapter": 13
+  },
+  {
+   "page": 54,
+   "chap_title": null,
+   "examples": [
+    2
+   ],
+   "head": [
+    "54",
+    "例2.水泵轴选用深沟球轴承支承。已知轴颈d = 35 mm，转速n = 2900rpm ，"
+   ],
+   "chapter": 13
+  },
+  {
+   "page": 55,
+   "chap_title": null,
+   "examples": [
+    3
+   ],
+   "head": [
+    "55",
+    "例3.图示某轴用一对6210深沟球轴承支承,轴承的基本额定动载荷C=35KN，"
+   ],
+   "chapter": 13
+  },
+  {
+   "page": 56,
+   "chap_title": null,
+   "examples": [
+    4
+   ],
+   "head": [
+    "56",
+    "例4. 图示为一螺旋输送机，动力由一对锥齿轮传入， Ⅱ轴上"
+   ],
+   "chapter": 13
+  },
+  {
+   "page": 57,
+   "chap_title": null,
+   "examples": [],
+   "head": [
+    "57",
+    "解：（1）计算轴承上的合成的径向载荷Fr1、Fr2"
+   ],
+   "chapter": 13
+  },
+  {
+   "page": 58,
+   "chap_title": 15,
+   "examples": [],
+   "head": [
+    "第15章  轴"
+   ],
+   "chapter": 15
+  },
+  {
+   "page": 59,
+   "chap_title": null,
+   "examples": [
+    1
+   ],
+   "head": [
+    "59",
+    "例1：试分析图示轴系的结构错误。"
+   ],
+   "chapter": 15
+  },
+  {
+   "page": 60,
+   "chap_title": null,
+   "examples": [],
+   "head": [
+    "60",
+    "1.弹性挡圈为多余零件;    2.装轴承段应无键槽;    3.轴肩太高,不便拆卸;"
+   ],
+   "chapter": 15
+  },
+  {
+   "page": 61,
+   "chap_title": null,
+   "examples": [
+    2
+   ],
+   "head": [
+    "61",
+    "例2：指出图示轴系结构有错误和不合理地方."
+   ],
+   "chapter": 15
+  },
+  {
+   "page": 62,
+   "chap_title": null,
+   "examples": [],
+   "head": [
+    "62",
+    "1.轴端面应在联轴器孔内;    2.联轴器轴向未定位(加轴肩);"
+   ],
+   "chapter": 15
+  },
+  {
+   "page": 63,
+   "chap_title": null,
+   "examples": [
+    3
+   ],
+   "head": [
+    "63",
+    "例3.图示为蜗轮轴系的结构图，已知蜗轮轴上的轴承采用脂润滑，"
+   ],
+   "chapter": 15
+  },
+  {
+   "page": 64,
+   "chap_title": null,
+   "examples": [],
+   "head": [
+    "64",
+    "1）安装蜗轮的轴头长度应小于轮毂宽；"
+   ],
+   "chapter": 15
+  },
+  {
+   "page": 65,
+   "chap_title": null,
+   "examples": [],
+   "head": [
+    "轴承：",
+    "1.内圈轴肩定位，轴肩太高,不便拆卸"
+   ],
+   "chapter": 15
+  },
+  {
+   "page": 66,
+   "chap_title": null,
+   "examples": [],
+   "head": [
+    "结束"
+   ],
+   "chapter": 15
+  }
+ ]
+}
