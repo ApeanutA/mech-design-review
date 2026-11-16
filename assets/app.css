@@ -175,6 +175,16 @@ button { font: inherit; color: inherit; cursor: pointer; border: none; backgroun
 .opt.bad { border-color: var(--bad); background: var(--bad-soft); }
 .opt.bad .k { background: var(--bad); border-color: var(--bad); color: #fff; }
 .opt.locked { cursor: default; }
+/* 填空式选择题：空位条 + 已填字母 */
+.picks { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 6px; }
+.slot {
+  min-width: 46px; padding: 5px 10px; border-radius: 9px; text-align: center;
+  border: 1px dashed var(--line); background: var(--card2);
+  font-family: var(--mono); font-size: 13px; color: var(--sub);
+}
+.slot.on { border-style: solid; border-color: var(--pri); background: var(--pri-soft); color: var(--text); }
+.slot.hit { border-color: var(--ok); background: var(--ok-soft); color: var(--ok); }
+.slot.miss { border-color: var(--bad); background: var(--bad-soft); color: var(--bad); }
 
 .judge-row { display: flex; gap: 9px; margin-top: 12px; }
 .judge-btn {
@@ -284,4 +294,104 @@ input[type=range] { width: 100%; accent-color: var(--pri); }
   .top-nav button { padding: 5px 9px; font-size: 12.5px; }
   .q { padding: 14px; }
   .q-stem { font-size: 15px; }
+  .nps { grid-template-columns: 1fr; }
+}
+
+/* ---------- 知识点 & 大题思路 ---------- */
+.notes-hero { padding: 20px 22px; margin-bottom: 16px; }
+.notes-hero h1 { margin: 0 0 7px; font-size: 20px; letter-spacing: -.3px; }
+.notes-hero p { margin: 0 0 4px; color: var(--sub); font-size: 13.5px; }
+.nbar { display: flex; gap: 9px; flex-wrap: wrap; align-items: center; margin-bottom: 15px; }
+
+.nch { padding: 15px 17px; margin-bottom: 14px; }
+.nch-h { display: flex; align-items: baseline; gap: 9px; margin-bottom: 12px; flex-wrap: wrap; }
+.nch-h h2 { margin: 0; font-size: 17px; letter-spacing: -.2px; }
+.nch-h .nno {
+  font-size: 11.5px; font-weight: 700; color: var(--pri);
+  background: var(--pri-soft); border-radius: 5px; padding: 2px 7px;
+}
+.nch-h .nmeta { font-size: 12.5px; color: var(--sub); margin-left: auto; }
+
+.nsub {
+  font-size: 12.5px; font-weight: 700; color: var(--pri); letter-spacing: .4px;
+  margin: 16px 0 8px; display: flex; align-items: center; gap: 7px;
+}
+.nsub::before { content: ""; width: 3px; height: 13px; background: var(--pri); border-radius: 2px; }
+.nsub:first-child { margin-top: 0; }
+.nsub em { font-style: normal; font-weight: 500; color: var(--sub); font-size: 12px; }
+
+.nps { display: grid; gap: 8px; grid-template-columns: repeat(auto-fill, minmax(262px, 1fr)); }
+.np {
+  background: var(--card2); border: 1px solid var(--line); border-left: 3px solid var(--pri);
+  border-radius: 9px; padding: 9px 11px;
+}
+.np.warn { border-left-color: var(--warn); }
+.np-t { font-size: 13.5px; font-weight: 600; line-height: 1.5; }
+.np-f { margin-top: 5px; font-size: 13px; overflow-x: auto; }
+.np-d { margin-top: 4px; font-size: 12.5px; color: var(--sub); line-height: 1.65; }
+.np-d .katex { font-size: 1em; }
+
+.ne { border: 1px solid var(--line); border-radius: 11px; padding: 12px 14px; margin-bottom: 10px; background: var(--card2); }
+.ne-h { display: flex; gap: 8px; align-items: baseline; margin-bottom: 6px; flex-wrap: wrap; }
+.ne-tag {
+  font-size: 11.5px; font-weight: 700; color: #fff; background: var(--pri);
+  border-radius: 5px; padding: 1px 6px; white-space: nowrap;
+}
+.ne-t { font-size: 14.5px; font-weight: 650; line-height: 1.5; }
+.ne-q { font-size: 13px; color: var(--sub); line-height: 1.7; }
+.ne ol { margin: 6px 0 0 19px; padding: 0; font-size: 13.5px; line-height: 1.8; }
+.ne ol li { margin-bottom: 3px; }
+.ne-f {
+  margin-top: 8px; font-size: 13px; background: var(--card);
+  border: 1px dashed var(--line); border-radius: 8px; padding: 7px 10px; overflow-x: auto;
+}
+.ne-f b { color: var(--pri); font-weight: 600; font-size: 11.5px; display: block; margin-bottom: 3px; }
+.ne-f div + div { margin-top: 3px; }
+.ne-tip {
+  margin-top: 8px; font-size: 12.5px; color: var(--warn); background: var(--warn-soft);
+  border-radius: 7px; padding: 6px 9px; line-height: 1.65;
+}
+
+.nc {
+  border: 1px solid var(--line); border-left: 3px solid var(--ok);
+  border-radius: 9px; padding: 10px 12px; margin-bottom: 9px; background: var(--card2);
+}
+.nc-h { display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; margin-bottom: 5px; }
+.nc-ref {
+  font-size: 11.5px; color: var(--sub); border: 1px solid var(--line);
+  border-radius: 5px; padding: 0 5px; white-space: nowrap;
+}
+.nc-q { font-size: 13.5px; line-height: 1.75; }
+.nc-o { font-size: 13px; color: var(--sub); margin-top: 3px; line-height: 1.7; }
+.nc-a { font-size: 13px; margin-top: 5px; }
+.nc-a b { color: var(--ok); }
+.nc ol { margin: 5px 0 0 19px; font-size: 13px; line-height: 1.75; }
+.nc-f { margin-top: 5px; font-size: 12.5px; color: var(--sub); overflow-x: auto; }
+
+@media print {
+  .top, .nbar, .footbar, .crumb, .no-print { display: none !important; }
+  body { background: #fff; color: #000; padding: 0; }
+  .wrap { max-width: none; padding: 0; }
+  .card, .np, .ne, .nc { box-shadow: none; break-inside: avoid; page-break-inside: avoid; }
+  .nch { border: none; padding: 0; margin-bottom: 16px; break-before: page; page-break-before: always; }
+  .nch:first-of-type { break-before: auto; page-break-before: auto; }
+  .nps { grid-template-columns: 1fr 1fr; }
+  .notes-hero { border: none; padding: 0 0 8px; }
+  @page { margin: 14mm 12mm; }
+}
+
+/* 知识点页 · PDF 目录（打印时独占封面页） */
+.ntoc { margin: 0 0 16px; }
+.ntoc h2 { font-size: 15px; margin: 0 0 10px; }
+.ntoc ul { list-style: none; margin: 0; padding: 0; }
+.ntoc li {
+  display: flex; align-items: baseline; gap: 10px;
+  padding: 6px 2px; border-bottom: 1px dashed var(--line); font-size: 13.5px;
+}
+.ntoc-no { flex: 0 0 auto; color: var(--pri); font-weight: 600; }
+.ntoc-nm { flex: 1 1 auto; }
+.ntoc-ct { flex: 0 0 auto; color: var(--sub); font-size: 12px; }
+
+@media print {
+  .ntoc { break-after: page; page-break-after: always; }
 }

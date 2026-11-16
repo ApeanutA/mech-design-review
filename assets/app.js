@@ -67,6 +67,14 @@
   }
   function mathHtml(s) {
     var str = String(s == null ? "" : s);
+    if (str.indexOf("**") < 0) return mathSeg(str);
+    return str.split(/(\*\*[^*]+\*\*)/).map(function (seg) {
+      if (seg.length > 4 && seg.slice(0, 2) === "**") return "<strong>" + mathSeg(seg.slice(2, -2)) + "</strong>";
+      return mathSeg(seg);
+    }).join("");
+  }
+  function mathSeg(s) {
+    var str = String(s == null ? "" : s);
     if (str.indexOf("$") < 0) return mathPlain(str);
     var out = "", last = 0, m, re = /\$([^$]+)\$/g;
     while ((m = re.exec(str)) !== null) {
@@ -169,6 +177,7 @@
     if (!p.length) return viewHome(app);
     if (p[0] === "ch") return viewChapter(app, +p[1], p[2]);
     if (p[0] === "quiz") return viewQuizSetup(app);
+    if (p[0] === "notes") return viewNotes(app, p[1]);
     if (p[0] === "run") return viewSession(app);
     if (p[0] === "exam") return viewExam(app, p[1] ? +p[1] : null, p[2] ? +p[2] : null);
     if (p[0] === "wrong") return viewCollection(app, "wrong");
@@ -180,6 +189,7 @@
     var nav = document.getElementById("nav");
     nav.innerHTML = "";
     [["#/", "章节", ""], ["#/quiz", "抽题训练", "quiz"],
+     ["#/notes", "知识点", "notes"],
      ["#/exam", "大题原图", "exam"], ["#/wrong", "错题本", "wrong"],
      ["#/good", "收藏", "good"]].forEach(function (it) {
       var b = h("button", null, it[1]);
@@ -411,10 +421,16 @@
     if (q._kind === "choice" && q.options && q.options.length) {
       var keys = q.answer_keys || [];
       var multi = keys.length > 1;
+      /* 题干里画了几个空位 → 决定是「按空位顺序填」还是「多选（与顺序无关）」。
+         第5章10题/15题这类是「每个空从 A~E 里挑一个」，同一个字母可以填多次
+         （答案 BAAE、AABB），所以要按顺序点、点一次记一个，不能像多选那样来回切换。 */
+      var blanks = (q.stem.match(/[＿_]{2,}| {3,}/g) || []).length;
+      var fillMode = multi && blanks > 1 && blanks === keys.length;
       var picked = [];
       var opts = h("div", "opts");
       var buttons = [];
       var submit = null;
+      var strip = null, tools = null, undo = null;
 
       q.options.forEach(function (o) {
         var b = h("button", "opt");
@@ -426,6 +442,10 @@
           if (b.classList.contains("locked")) return;
           if (!multi) {
             judge([o.key]);
+          } else if (fillMode) {
+            if (picked.length >= keys.length) return;   // 已填满，先退格再改
+            picked.push(o.key);                          // 同一字母可重复填
+            paint();
           } else {
             var i = picked.indexOf(o.key);
             if (i >= 0) { picked.splice(i, 1); b.classList.remove("sel"); }
@@ -436,29 +456,75 @@
         buttons.push(b);
         opts.appendChild(b);
       });
+      /* 填空式选择题：把「第几个空填了什么」画出来，并提供退格/清空 */
+      function paint() {
+        buttons.forEach(function (b) {
+          var k = b.querySelector(".k").textContent;
+          if (picked.indexOf(k) >= 0) b.classList.add("sel");
+          else b.classList.remove("sel");
+        });
+        if (strip) {
+          strip.innerHTML = keys.map(function (k, i) {
+            var v = picked[i];
+            return '<span class="slot' + (v ? " on" : "") + '">' + (i + 1) + "．" +
+              esc(v == null ? "＿" : v) + "</span>";
+          }).join("");
+        }
+        if (submit) submit.disabled = picked.length !== keys.length;
+        if (undo) undo.disabled = picked.length === 0;
+      }
+
       card.appendChild(opts);
 
       if (multi) {
         var hint = h("div", "small muted");
         hint.style.marginTop = "9px";
-        hint.textContent = "本题有 " + keys.length + " 个空，依次选出 " + keys.length + " 个答案后提交。";
+        hint.textContent = fillMode
+          ? "本题有 " + keys.length + " 个空，按空位顺序逐个点选（同一字母可以重复选），点错可退格。"
+          : "多选题：本题有 " + keys.length + " 个正确选项，选够 " + keys.length + " 个后提交（不限顺序）。";
         card.appendChild(hint);
+        if (fillMode) {
+          strip = h("div", "picks");
+          card.appendChild(strip);
+          tools = h("div", "row");
+          tools.style.marginTop = "9px";
+          undo = h("button", "btn sm ghost", "退格");
+          undo.disabled = true;
+          undo.onclick = function () { if (!picked.length) return; picked.pop(); paint(); };
+          var clr = h("button", "btn sm ghost", "清空");
+          clr.onclick = function () { picked.length = 0; paint(); };
+          tools.appendChild(undo);
+          tools.appendChild(clr);
+          card.appendChild(tools);
+        }
         submit = h("button", "btn sm", "提交答案");
         submit.style.marginTop = "9px";
         submit.disabled = true;
         submit.onclick = function () { judge(picked.slice()); };
         card.appendChild(submit);
+        paint();
       }
 
       function judge(pick) {
-        var ok = pick.length === keys.length && pick.every(function (k, i) { return k === keys[i]; });
+        /* 填空式：字母要跟空位一一对上（允许重复字母）；多选：只比较选中的集合 */
+        var ok = pick.length === keys.length && (fillMode
+          ? pick.every(function (k, i) { return k === keys[i]; })
+          : keys.every(function (k) { return pick.indexOf(k) >= 0; }));
         buttons.forEach(function (b) {
           b.classList.add("locked");
+          b.classList.remove("sel");
           var k = b.querySelector(".k").textContent;
           if (keys.indexOf(k) >= 0) b.classList.add("ok");
           else if (pick.indexOf(k) >= 0) b.classList.add("bad");
         });
-        if (q.options.length && q.options[0].key !== "A") { /* 无操作，兼容异常数据 */ }
+        if (strip) {
+          strip.innerHTML = keys.map(function (k, i) {
+            var v = pick[i];
+            return '<span class="slot on ' + (v === k ? "hit" : "miss") + '">' +
+              (i + 1) + "．" + esc(v == null ? "＿" : v) + "</span>";
+          }).join("");
+        }
+        if (tools) tools.remove();
         if (submit) submit.remove();
         var tip = h("div", "small");
         tip.style.marginTop = "10px";
@@ -475,6 +541,13 @@
           b.classList.add("locked");
           if (keys.indexOf(b.querySelector(".k").textContent) >= 0) b.classList.add("ok");
         });
+        if (strip) {
+          strip.innerHTML = keys.map(function (k, i) {
+            return '<span class="slot on">' + (i + 1) + "．" + esc(k) + "</span>";
+          }).join("");
+        }
+        if (tools) tools.remove();
+        if (submit) submit.remove();
         showAnswer();
       }
     } else if (q._kind === "judge") {
@@ -772,6 +845,216 @@
     lb.appendChild(img); lb.appendChild(close);
     lb.onclick = function (e) { if (e.target === lb || e.target === close) lb.remove(); };
     document.body.appendChild(lb);
+  }
+
+  /* ================= 知识点 & 大题思路 ================= */
+  function notesList() { return (window.NOTES && window.NOTES.chapters) || []; }
+  function notesChapter(no) {
+    var L = notesList();
+    for (var i = 0; i < L.length; i++) if (L[i].no === +no) return L[i];
+    return null;
+  }
+  function nLine(cls, txt) { var d = h("div", cls); d.innerHTML = mathHtml(txt); return d; }
+
+  function nPoint(p) {
+    var d = h("div", "np" + (p.warn ? " warn" : ""));
+    d.appendChild(h("div", "np-t", p.t));
+    if (p.f) d.appendChild(nLine("np-f", p.f));
+    if (p.d) d.appendChild(nLine("np-d", p.d));
+    return d;
+  }
+
+  function nExam(e) {
+    var d = h("div", "ne");
+    var hd = h("div", "ne-h");
+    hd.appendChild(h("span", "ne-tag", e.tag || "大题"));
+    var t = h("span", "ne-t"); t.innerHTML = mathHtml(e.t); hd.appendChild(t);
+    d.appendChild(hd);
+    if (e.q) d.appendChild(nLine("ne-q", e.q));
+    if (e.steps && e.steps.length) {
+      var ol = h("ol");
+      e.steps.forEach(function (s) { var li = h("li"); li.innerHTML = mathHtml(s); ol.appendChild(li); });
+      d.appendChild(ol);
+    }
+    if (e.f && e.f.length) {
+      var box = h("div", "ne-f");
+      box.appendChild(h("b", null, "核心公式"));
+      e.f.forEach(function (x) { box.appendChild(nLine(null, x)); });
+      d.appendChild(box);
+    }
+    if (e.tip) d.appendChild(nLine("ne-tip", "⚠ " + e.tip));
+    return d;
+  }
+
+  function nCalc(c) {
+    var d = h("div", "nc");
+    var hd = h("div", "nc-h");
+    if (c.ref) hd.appendChild(h("span", "nc-ref", c.ref));
+    var t = h("span"); t.innerHTML = mathHtml(c.t || "计算题"); hd.appendChild(t);
+    d.appendChild(hd);
+    d.appendChild(nLine("nc-q", c.q));
+    if (c.opts && c.opts.length) d.appendChild(nLine("nc-o", c.opts.join("　")));
+    if (c.steps && c.steps.length) {
+      var ol = h("ol");
+      c.steps.forEach(function (s) { var li = h("li"); li.innerHTML = mathHtml(s); ol.appendChild(li); });
+      d.appendChild(ol);
+    }
+    if (c.f) d.appendChild(nLine("nc-f", "公式：" + c.f));
+    if (c.a) { var a = h("div", "nc-a"); a.innerHTML = "答案：<b>" + esc(c.a) + "</b>"; d.appendChild(a); }
+    return d;
+  }
+
+  function nChapterBody(ch) {
+    var box = h("div");
+    if (ch.points && ch.points.length) {
+      var s1 = h("div", "nsub");
+      s1.appendChild(document.createTextNode("知识点与公式"));
+      s1.appendChild(h("em", null, ch.points.length + " 条"));
+      box.appendChild(s1);
+      var g = h("div", "nps");
+      ch.points.forEach(function (p) { g.appendChild(nPoint(p)); });
+      box.appendChild(g);
+    }
+    if (ch.exam && ch.exam.length) {
+      var s2 = h("div", "nsub");
+      s2.appendChild(document.createTextNode("大题思路"));
+      s2.appendChild(h("em", null, ch.exam.length + " 道典型题"));
+      box.appendChild(s2);
+      ch.exam.forEach(function (e) { box.appendChild(nExam(e)); });
+    }
+    if (ch.calc && ch.calc.length) {
+      var s3 = h("div", "nsub");
+      s3.appendChild(document.createTextNode("客观题里的计算题"));
+      s3.appendChild(h("em", null, ch.calc.length + " 道"));
+      box.appendChild(s3);
+      ch.calc.forEach(function (c) { box.appendChild(nCalc(c)); });
+    }
+    if (ch.note) box.appendChild(nLine("nc-f", ch.note));
+    return box;
+  }
+
+  function nChapterCard(ch) {
+    var c = h("button", "card ch-card");
+    c.appendChild(h("span", "no", "第 " + ch.no + " 章"));
+    c.appendChild(h("h3", null, ch.name));
+    var bits = [];
+    if (ch.points) bits.push("知识点 " + ch.points.length);
+    if (ch.exam) bits.push("大题 " + ch.exam.length);
+    if (ch.calc) bits.push("计算题 " + ch.calc.length);
+    c.appendChild(h("div", "meta", bits.join(" · ")));
+    c.onclick = function () { go("#/notes/" + ch.no); };
+    return c;
+  }
+
+  function nChapterSec(ch) {
+    var sec = h("div", "card nch");
+    var hd = h("div", "nch-h");
+    hd.appendChild(h("span", "nno", "第 " + ch.no + " 章"));
+    hd.appendChild(h("h2", null, ch.name));
+    sec.appendChild(hd);
+    sec.appendChild(nChapterBody(ch));
+    return sec;
+  }
+
+  function printNotes() {
+    if (location.hash !== "#/notes/all") location.hash = "#/notes/all";
+    setTimeout(function () { window.print(); }, 450);
+  }
+
+  function viewNotes(app, arg) {
+    navBar("notes");
+    var wrap = h("div", "wrap");
+    var L = notesList();
+
+    if (!L.length) {
+      var es = h("div", "card empty-state");
+      es.appendChild(h("div", "ic", "📗"));
+      es.appendChild(h("div", null, "知识点数据还没生成。"));
+      wrap.appendChild(es);
+      app.appendChild(wrap);
+      return;
+    }
+
+    /* —— 打印视图：全部章节一次排完 —— */
+    if (arg === "all") {
+      var head = h("div", "notes-hero");
+      head.appendChild(h("h1", null, "机械设计 · 知识点与大题思路"));
+      head.appendChild(h("p", null, "考试范围：" + L.length + " 章 · 更新 " +
+        ((window.NOTES && window.NOTES.updated) || "")));
+      wrap.appendChild(head);
+      var toc = h("div", "ntoc");
+      toc.appendChild(h("h2", null, "目录"));
+      var ul = h("ul");
+      L.forEach(function (ch) {
+        var li = h("li");
+        li.appendChild(h("span", "ntoc-no", "第 " + ch.no + " 章"));
+        li.appendChild(h("span", "ntoc-nm", ch.name));
+        li.appendChild(h("span", "ntoc-ct", "知识点 " + (ch.points || []).length +
+          " · 大题 " + (ch.exam || []).length + " · 计算题 " + (ch.calc || []).length));
+        ul.appendChild(li);
+      });
+      toc.appendChild(ul);
+      wrap.appendChild(toc);
+      L.forEach(function (ch) { wrap.appendChild(nChapterSec(ch)); });
+      app.appendChild(wrap);
+      return;
+    }
+
+    /* —— 单章 —— */
+    if (arg) {
+      var ch = notesChapter(arg);
+      if (!ch) { go("#/notes"); return; }
+      var crumb = h("div", "crumb");
+      var b1 = h("button", null, "← 知识点总览");
+      b1.onclick = function () { go("#/notes"); };
+      crumb.appendChild(b1);
+      crumb.appendChild(h("span", null, "/ 第 " + ch.no + " 章"));
+      wrap.appendChild(crumb);
+      wrap.appendChild(nChapterSec(ch));
+
+      var nav = h("div", "nbar");
+      var i = L.indexOf(ch);
+      if (i > 0) {
+        var pv = h("button", "btn ghost sm", "← 第 " + L[i - 1].no + " 章 " + L[i - 1].name);
+        pv.onclick = function () { go("#/notes/" + L[i - 1].no); };
+        nav.appendChild(pv);
+      }
+      if (i < L.length - 1) {
+        var nx = h("button", "btn ghost sm", "第 " + L[i + 1].no + " 章 " + L[i + 1].name + " →");
+        nx.onclick = function () { go("#/notes/" + L[i + 1].no); };
+        nav.appendChild(nx);
+      }
+      nav.appendChild(h("span", "small muted", ""));
+      wrap.appendChild(nav);
+      app.appendChild(wrap);
+      return;
+    }
+
+    /* —— 总览 —— */
+    var hero = h("div", "card notes-hero");
+    hero.appendChild(h("h1", null, "📗 知识点 & 大题思路"));
+    hero.appendChild(h("p", null, "按考试范围逐章整理：知识点与公式、例题大题思路、客观题里的计算题。"));
+    hero.appendChild(h("p", null, "范围：题库与例题涉及的 " + L.length +
+      " 章；第 6、8、14 章只有客观题，按纯知识点列出。更新 " +
+      ((window.NOTES && window.NOTES.updated) || "")));
+    wrap.appendChild(hero);
+
+    var bar = h("div", "nbar");
+    var pb = h("button", "btn", "🖨 打印 / 存为 PDF（全部章节）");
+    pb.onclick = printNotes;
+    bar.appendChild(pb);
+    var np0 = 0, ne0 = 0, nc0 = 0;
+    L.forEach(function (c) {
+      np0 += (c.points || []).length; ne0 += (c.exam || []).length; nc0 += (c.calc || []).length;
+    });
+    bar.appendChild(h("span", "small muted",
+      "共 " + np0 + " 条知识点 · " + ne0 + " 道例题思路 · " + nc0 + " 道计算题"));
+    wrap.appendChild(bar);
+
+    var grid = h("div", "grid");
+    L.forEach(function (ch) { grid.appendChild(nChapterCard(ch)); });
+    wrap.appendChild(grid);
+    app.appendChild(wrap);
   }
 
   /* ================= 错题本 / 收藏 ================= */
