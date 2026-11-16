@@ -245,6 +245,8 @@ button { font: inherit; color: inherit; cursor: pointer; border: none; backgroun
 }
 .chip:hover { border-color: var(--pri); color: var(--pri); }
 .chip.on { background: var(--pri); border-color: var(--pri); color: #fff; }
+.chip:disabled { opacity: .38; cursor: not-allowed; }
+.chip:disabled:hover { border-color: var(--line); color: var(--sub); }
 input[type=range] { width: 100%; accent-color: var(--pri); }
 .big-n { font-family: var(--mono); font-size: 19px; font-weight: 700; color: var(--pri); }
 

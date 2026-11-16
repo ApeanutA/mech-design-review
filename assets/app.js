@@ -176,7 +176,7 @@
     window.scrollTo(0, 0);
     if (!p.length) return viewHome(app);
     if (p[0] === "ch") return viewChapter(app, +p[1], p[2]);
-    if (p[0] === "quiz") return viewQuizSetup(app);
+    if (p[0] === "quiz") return viewQuizSetup(app, p[1] === "wrong" ? "wrong" : "all");
     if (p[0] === "notes") return viewNotes(app, p[1]);
     if (p[0] === "run") return viewSession(app);
     if (p[0] === "exam") return viewExam(app, p[1] ? +p[1] : null, p[2] ? +p[2] : null);
@@ -722,17 +722,41 @@
   }
 
   /* ================= 抽题设置 ================= */
-  var quizCfg = { chs: null, kinds: null, n: 20 };
+  var quizCfg = { src: "all", chs: null, kinds: null, n: 20 };
 
-  function viewQuizSetup(app) {
+  function wrongQuestions() {
+    return store.wrong.map(function (id) { return QMAP[id]; }).filter(Boolean);
+  }
+
+  function viewQuizSetup(app, src) {
     navBar("quiz");
+    quizCfg.src = src === "wrong" ? "wrong" : "all";
     if (!quizCfg.chs) quizCfg.chs = Q.chapters.map(function (c) { return c.no; });
     if (!quizCfg.kinds) quizCfg.kinds = KIND_ORDER.slice();
+    var wrongQ = wrongQuestions();
+    var base = quizCfg.src === "wrong" ? wrongQ : ALLQ;
 
     var wrap = h("div", "wrap");
     var card = h("div", "card panel");
     card.appendChild(h("div", "sec-title", "🎯 抽题训练"));
     card.appendChild(h("p", "small muted", "选范围与题量，随机抽题做一遍；做完给成绩并自动收集错题。"));
+
+    // 题源
+    var f0 = h("div", "fld");
+    f0.appendChild(h("label", null, "题源"));
+    var c0 = h("div", "chips");
+    [["all", "全部题库", ALLQ.length], ["wrong", "错题本", wrongQ.length]].forEach(function (it) {
+      var on = quizCfg.src === it[0];
+      var b = h("button", "chip" + (on ? " on" : ""), it[1] + "（" + it[2] + " 题）");
+      b.disabled = it[0] === "wrong" && it[2] === 0;
+      b.onclick = function () { go("#/quiz/" + it[0]); };
+      c0.appendChild(b);
+    });
+    f0.appendChild(c0);
+    f0.appendChild(h("p", "small muted", quizCfg.src === "wrong"
+      ? "只从错题本里抽，可再按章节、题型收窄；做对了的题会自动从错题本移出。"
+      : "从全部题库里抽。想专攻做错的题，切到「错题本」。"));
+    card.appendChild(f0);
 
     // 章节
     var f1 = h("div", "fld");
@@ -743,7 +767,14 @@
     c1.appendChild(allCh);
     Q.chapters.forEach(function (ch) {
       var on = quizCfg.chs.indexOf(ch.no) >= 0;
-      var b = h("button", "chip" + (on ? " on" : ""), "第" + ch.no + "章");
+      var label = "第" + ch.no + "章";
+      var cnt = 0;
+      if (quizCfg.src === "wrong") {
+        cnt = wrongQ.filter(function (q) { return q._ch === ch.no; }).length;
+        label += " " + cnt;
+      }
+      var b = h("button", "chip" + (on ? " on" : ""), label);
+      if (quizCfg.src === "wrong" && !cnt) b.disabled = true;
       b.onclick = function () {
         var i = quizCfg.chs.indexOf(ch.no);
         if (i >= 0) quizCfg.chs.splice(i, 1); else quizCfg.chs.push(ch.no);
@@ -772,11 +803,11 @@
     card.appendChild(f2);
 
     // 题量
-    var pool = ALLQ.filter(function (q) {
+    var pool = base.filter(function (q) {
       return quizCfg.chs.indexOf(q._ch) >= 0 && quizCfg.kinds.indexOf(q._kind) >= 0;
     });
     var f3 = h("div", "fld");
-    f3.appendChild(h("label", null, "题量（题库可用 " + pool.length + " 题）"));
+    f3.appendChild(h("label", null, "题量（当前范围可用 " + pool.length + " 题）"));
     var c3 = h("div", "chips");
     [10, 20, 30, 50, 0].forEach(function (n) {
       var label = n === 0 ? "全部" : n + " 题";
@@ -796,7 +827,7 @@
         var j = Math.floor(Math.random() * (i + 1));
         var t = shuffled[i]; shuffled[i] = shuffled[j]; shuffled[j] = t;
       }
-      startSession(shuffled.slice(0, n), "抽题训练 · " + n + " 题");
+      startSession(shuffled.slice(0, n), (quizCfg.src === "wrong" ? "错题训练 · " : "抽题训练 · ") + n + " 题");
     };
     card.appendChild(start);
     wrap.appendChild(card);
@@ -1147,7 +1178,7 @@
   }
 
   /* ================= 错题本 / 收藏 ================= */
-  var KIND_ORDER = { choice: 0, blank: 1, judge: 2, short: 3 };
+  var KIND_RANK = { choice: 0, blank: 1, judge: 2, short: 3 };
 
   /* 把一组题按章节归组（章号升序，章内按题型、题号升序） */
   function groupByChapter(list) {
@@ -1161,7 +1192,7 @@
     groups.sort(function (a, b) { return a.no - b.no; });
     groups.forEach(function (g) {
       g.list.sort(function (a, b) {
-        var ka = KIND_ORDER[a._kind], kb = KIND_ORDER[b._kind];
+        var ka = KIND_RANK[a._kind], kb = KIND_RANK[b._kind];
         if (ka !== kb) return (ka || 0) - (kb || 0);
         return (+a.no || 0) - (+b.no || 0);
       });
