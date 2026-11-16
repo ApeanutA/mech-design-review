@@ -238,19 +238,19 @@
       var np0 = 0, ne0 = 0, nc0 = 0;
       NL.forEach(function (ch) {
         np0 += (ch.points || []).length;
-        ne0 += (ch.exam || []).length;
+        ne0 += (ch.patterns || []).length;
         nc0 += (ch.calc || []).length;
       });
       var t0 = h("div", "sec-title");
-      t0.appendChild(document.createTextNode("📗 知识点 & 大题思路"));
+      t0.appendChild(document.createTextNode("📗 知识点 & 题型解法"));
       t0.appendChild(h("em", null, "考前速览 · 可打印"));
       wrap.appendChild(t0);
 
       var nb = h("button", "card notes-entry");
       var nbL = h("div", "ne-l");
-      nbL.appendChild(h("h3", null, "知识点与公式 · 例题大题思路 · 客观题计算题"));
+      nbL.appendChild(h("h3", null, "知识点与公式 · 同类题型解法 · 客观题计算题"));
       nbL.appendChild(h("div", "meta", "按考试范围逐章整理 " + NL.length +
-        " 章 —— 知识点 " + np0 + " 条 · 大题思路 " + ne0 + " 道 · 客观题计算题 " + nc0 + " 道"));
+        " 章 —— 知识点 " + np0 + " 条 · 题型解法 " + ne0 + " 类 · 客观题计算题 " + nc0 + " 道"));
       nb.appendChild(nbL);
       var nbR = h("div", "ne-r");
       nbR.appendChild(h("span", "badge", "共 " + (np0 + ne0 + nc0) + " 条"));
@@ -865,7 +865,38 @@
       wrap.appendChild(p);
     });
 
+    /* 该题的解题思路（数据来自 data/notes.js 的 exam 数组，按 tag「例N」对应） */
+    var nc = notesChapter(ch.no);
+    if (nc && nc.exam && nc.exam.length) {
+      nc.exam.forEach(function (e) {
+        if (e.tag === "例" + ex.no) wrap.appendChild(exIdea(e));
+      });
+    }
+
     app.appendChild(wrap);
+  }
+
+  /* 例题详情页 · 单题解题思路 */
+  function exIdea(e) {
+    var d = h("div", "card ex-idea");
+    var hd = h("div", "ei-h");
+    hd.appendChild(h("span", "ei-tag", "解题思路"));
+    var t = h("span", "ei-t"); t.innerHTML = mathHtml(e.t || "本题思路");
+    hd.appendChild(t);
+    d.appendChild(hd);
+    if (e.steps && e.steps.length) {
+      var ol = h("ol", "ei-steps");
+      e.steps.forEach(function (s) { var li = h("li"); li.innerHTML = mathHtml(s); ol.appendChild(li); });
+      d.appendChild(ol);
+    }
+    if (e.f && e.f.length) {
+      var box = h("div", "ei-f");
+      box.appendChild(h("b", null, "核心公式"));
+      e.f.forEach(function (x) { box.appendChild(nLine(null, x)); });
+      d.appendChild(box);
+    }
+    if (e.tip) d.appendChild(nLine("ei-tip", "⚠ " + e.tip));
+    return d;
   }
 
   function lightbox(src) {
@@ -924,6 +955,21 @@
     return d;
   }
 
+  function nPattern(p, ch) {
+    var d = h("div", "np npt");
+    var tt = h("div", "np-t"); tt.innerHTML = mathHtml(p.t); d.appendChild(tt);
+    var f = p.f;
+    if (!f && p.from && ch && ch.exam) {
+      ch.exam.forEach(function (e) {
+        if (e.tag === p.from && e.f && e.f.length) f = e.f.slice(0, 2).join("　");
+      });
+    }
+    if (f) d.appendChild(nLine("np-f", f));
+    if (p.how) d.appendChild(nLine("np-d", p.how));
+    if (p.key) d.appendChild(nLine("np-key", "考察知识点：" + p.key));
+    return d;
+  }
+
   function nCalc(c) {
     var d = h("div", "nc");
     var hd = h("div", "nc-h");
@@ -953,12 +999,12 @@
       ch.points.forEach(function (p) { g.appendChild(nPoint(p)); });
       box.appendChild(g);
     }
-    if (ch.exam && ch.exam.length) {
+    if (ch.patterns && ch.patterns.length) {
       var s2 = h("div", "nsub");
-      s2.appendChild(document.createTextNode("大题思路"));
-      s2.appendChild(h("em", null, ch.exam.length + " 道典型题"));
+      s2.appendChild(document.createTextNode("同类题型解法"));
+      s2.appendChild(h("em", null, ch.patterns.length + " 类"));
       box.appendChild(s2);
-      ch.exam.forEach(function (e) { box.appendChild(nExam(e)); });
+      ch.patterns.forEach(function (p) { box.appendChild(nPattern(p, ch)); });
     }
     if (ch.calc && ch.calc.length) {
       var s3 = h("div", "nsub");
@@ -977,7 +1023,7 @@
     c.appendChild(h("h3", null, ch.name));
     var bits = [];
     if (ch.points) bits.push("知识点 " + ch.points.length);
-    if (ch.exam) bits.push("大题 " + ch.exam.length);
+    if (ch.patterns) bits.push("题型解法 " + ch.patterns.length);
     if (ch.calc) bits.push("计算题 " + ch.calc.length);
     c.appendChild(h("div", "meta", bits.join(" · ")));
     c.onclick = function () { go("#/notes/" + ch.no); };
@@ -1016,7 +1062,7 @@
     /* —— 打印视图：全部章节一次排完 —— */
     if (arg === "all") {
       var head = h("div", "notes-hero");
-      head.appendChild(h("h1", null, "机械设计 · 知识点与大题思路"));
+      head.appendChild(h("h1", null, "机械设计 · 知识点与题型解法"));
       head.appendChild(h("p", null, "考试范围：" + L.length + " 章 · 更新 " +
         ((window.NOTES && window.NOTES.updated) || "")));
       wrap.appendChild(head);
@@ -1029,7 +1075,7 @@
         li.appendChild(h("span", "ntoc-no", "第 " + ch.no + " 章"));
         li.appendChild(h("span", "ntoc-nm", ch.name));
         li.appendChild(h("span", "ntoc-ct", "知识点 " + (ch.points || []).length +
-          " · 大题 " + (ch.exam || []).length + " · 计算题 " + (ch.calc || []).length));
+          " · 题型解法 " + (ch.patterns || []).length + " · 计算题 " + (ch.calc || []).length));
         ul.appendChild(li);
       });
       toc.appendChild(ul);
@@ -1073,8 +1119,8 @@
 
     /* —— 总览 —— */
     var hero = h("div", "card notes-hero");
-    hero.appendChild(h("h1", null, "📗 知识点 & 大题思路"));
-    hero.appendChild(h("p", null, "按考试范围逐章整理：知识点与公式、例题大题思路、客观题里的计算题。"));
+    hero.appendChild(h("h1", null, "📗 知识点 & 题型解法"));
+    hero.appendChild(h("p", null, "按考试范围逐章整理：知识点与公式、同类题型的通用解法与看图思路、客观题里的计算题。"));
     hero.appendChild(h("p", null, "范围：题库与例题涉及的 " + L.length +
       " 章；第 6、8、14 章只有客观题，按纯知识点列出。更新 " +
       ((window.NOTES && window.NOTES.updated) || "")));
