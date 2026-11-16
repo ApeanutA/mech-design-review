@@ -308,6 +308,8 @@
       });
     });
     wrap.appendChild(eg);
+
+    wrap.appendChild(aiDisclaimer());
     app.appendChild(wrap);
   }
 
@@ -876,6 +878,14 @@
   }
 
   /* ================= 知识点 & 大题思路 ================= */
+  function aiDisclaimer() {
+    var d = h("div", "disclaimer");
+    d.appendChild(h("b", null, "免责声明"));
+    d.appendChild(document.createTextNode(
+      "　本站的题库提取、知识点整理、例题思路与客观题解答均由 AI 依据课程课件与例题原卷整理生成，仅供个人复习参考。" +
+      "题目与答案一律以原卷 PDF 与教材为准，公式、数据与结论请自行核对；如发现错误，欢迎指出以便更正。"));
+    return d;
+  }
   function notesList() { return (window.NOTES && window.NOTES.chapters) || []; }
   function notesChapter(no) {
     var L = notesList();
@@ -1010,6 +1020,7 @@
       head.appendChild(h("p", null, "考试范围：" + L.length + " 章 · 更新 " +
         ((window.NOTES && window.NOTES.updated) || "")));
       wrap.appendChild(head);
+      wrap.appendChild(aiDisclaimer());
       var toc = h("div", "ntoc");
       toc.appendChild(h("h2", null, "目录"));
       var ul = h("ul");
@@ -1054,6 +1065,8 @@
       }
       nav.appendChild(h("span", "small muted", ""));
       wrap.appendChild(nav);
+
+      wrap.appendChild(aiDisclaimer());
       app.appendChild(wrap);
       return;
     }
@@ -1082,6 +1095,8 @@
     var grid = h("div", "grid");
     L.forEach(function (ch) { grid.appendChild(nChapterCard(ch)); });
     wrap.appendChild(grid);
+
+    wrap.appendChild(aiDisclaimer());
     app.appendChild(wrap);
   }
 
