@@ -460,3 +460,16 @@ input[type=range] { width: 100%; accent-color: var(--pri); }
   .ch-group { break-after: avoid; }
   .ch-group .cg-run { display: none !important; }
 }
+
+/* ---------- 本章符号表 ---------- */
+.nsym { width: 100%; border-collapse: collapse; font-size: 13.5px; margin-top: 2px; }
+.nsym th, .nsym td {
+  text-align: left; padding: 6px 10px; vertical-align: top;
+  border-bottom: 1px solid var(--line);
+}
+.nsym th { color: var(--sub); font-weight: 600; font-size: 12.5px; padding-bottom: 5px; }
+.nsym tbody tr:last-child td { border-bottom: none; }
+.nsym td:first-child { white-space: nowrap; width: 7.5em; color: var(--pri); }
+.nsym td:nth-child(2) { line-height: 1.75; }
+.nsym td:last-child { white-space: nowrap; min-width: 4.5em; color: var(--sub); }
+@media print { .nsym tr { break-inside: avoid; } }

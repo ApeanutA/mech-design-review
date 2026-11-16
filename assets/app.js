@@ -1021,14 +1021,37 @@
 
   function nChapterBody(ch) {
     var box = h("div");
+    if (ch.symbols && ch.symbols.length) {
+      var ss = h("div", "nsub");
+      ss.appendChild(document.createTextNode("本章符号"));
+      ss.appendChild(h("em", null, ch.symbols.length + " 个"));
+      box.appendChild(ss);
+      var tb = h("table", "nsym");
+      var thead = h("thead"), trh = h("tr");
+      ["符号", "含义", "单位"].forEach(function (x) { trh.appendChild(h("th", null, x)); });
+      thead.appendChild(trh); tb.appendChild(thead);
+      var tbody = h("tbody");
+      ch.symbols.forEach(function (sy) {
+        var r = h("tr");
+        var c1 = h("td"); c1.innerHTML = mathHtml(sy.s || ""); r.appendChild(c1);
+        var c2 = h("td"); c2.innerHTML = mathHtml(sy.d || ""); r.appendChild(c2);
+        var c3 = h("td"); c3.innerHTML = mathHtml(sy.u || "—"); r.appendChild(c3);
+        tbody.appendChild(r);
+      });
+      tb.appendChild(tbody);
+      box.appendChild(tb);
+    }
     if (ch.points && ch.points.length) {
       var s1 = h("div", "nsub");
-      s1.appendChild(document.createTextNode("知识点与公式"));
+      s1.appendChild(document.createTextNode("知识点"));
       s1.appendChild(h("em", null, ch.points.length + " 条"));
       box.appendChild(s1);
-      var g = h("div", "nps");
-      ch.points.forEach(function (p) { g.appendChild(nPoint(p)); });
-      box.appendChild(g);
+      var gp = h("div", "nps");
+      // 带公式的排前面，其余保持原顺序（只做轻分类，不拆小节）
+      var ordered = ch.points.filter(function (p) { return p.f; })
+        .concat(ch.points.filter(function (p) { return !p.f; }));
+      ordered.forEach(function (p) { gp.appendChild(nPoint(p)); });
+      box.appendChild(gp);
     }
     if (ch.patterns && ch.patterns.length) {
       var s2 = h("div", "nsub");
