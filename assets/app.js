@@ -232,6 +232,34 @@
     hero.appendChild(stats);
     wrap.appendChild(hero);
 
+    /* 知识点 & 大题思路 入口 */
+    var NL = notesList();
+    if (NL.length) {
+      var np0 = 0, ne0 = 0, nc0 = 0;
+      NL.forEach(function (ch) {
+        np0 += (ch.points || []).length;
+        ne0 += (ch.exam || []).length;
+        nc0 += (ch.calc || []).length;
+      });
+      var t0 = h("div", "sec-title");
+      t0.appendChild(document.createTextNode("📗 知识点 & 大题思路"));
+      t0.appendChild(h("em", null, "考前速览 · 可打印"));
+      wrap.appendChild(t0);
+
+      var nb = h("button", "card notes-entry");
+      var nbL = h("div", "ne-l");
+      nbL.appendChild(h("h3", null, "知识点与公式 · 例题大题思路 · 客观题计算题"));
+      nbL.appendChild(h("div", "meta", "按考试范围逐章整理 " + NL.length +
+        " 章 —— 知识点 " + np0 + " 条 · 大题思路 " + ne0 + " 道 · 客观题计算题 " + nc0 + " 道"));
+      nb.appendChild(nbL);
+      var nbR = h("div", "ne-r");
+      nbR.appendChild(h("span", "badge", "共 " + (np0 + ne0 + nc0) + " 条"));
+      nbR.appendChild(h("span", "go-arrow", "查看 →"));
+      nb.appendChild(nbR);
+      nb.onclick = function () { go("#/notes"); };
+      wrap.appendChild(nb);
+    }
+
     /* 章节 */
     var t1 = h("div", "sec-title");
     t1.appendChild(document.createTextNode("📘 分章节刷题"));
