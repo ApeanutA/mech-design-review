@@ -1147,17 +1147,54 @@
   }
 
   /* ================= 错题本 / 收藏 ================= */
+  var KIND_ORDER = { choice: 0, blank: 1, judge: 2, short: 3 };
+
+  /* 把一组题按章节归组（章号升序，章内按题型、题号升序） */
+  function groupByChapter(list) {
+    var order = [], gmap = {};
+    list.forEach(function (q) {
+      var k = q._ch;
+      if (!gmap[k]) { gmap[k] = { no: q._ch, name: q._chName || "", list: [] }; order.push(k); }
+      gmap[k].list.push(q);
+    });
+    var groups = order.map(function (k) { return gmap[k]; });
+    groups.sort(function (a, b) { return a.no - b.no; });
+    groups.forEach(function (g) {
+      g.list.sort(function (a, b) {
+        var ka = KIND_ORDER[a._kind], kb = KIND_ORDER[b._kind];
+        if (ka !== kb) return (ka || 0) - (kb || 0);
+        return (+a.no || 0) - (+b.no || 0);
+      });
+    });
+    return groups;
+  }
+
+  function chapterGroupBar(g, type) {
+    var gt = h("div", "ch-group");
+    gt.appendChild(h("span", "cg-no", "第 " + g.no + " 章"));
+    if (g.name) gt.appendChild(h("span", "cg-nm", g.name));
+    gt.appendChild(h("em", "cg-ct", g.list.length + " 道"));
+    var b = h("button", "btn ghost sm cg-run", "▶ 只做本章");
+    b.onclick = function () {
+      startSession(g.list.slice(), "第" + g.no + "章 · " + (g.name || "") + (type === "wrong" ? " · 错题" : " · 收藏"));
+    };
+    gt.appendChild(b);
+    return gt;
+  }
+
   function viewCollection(app, type) {
     navBar(type);
     var wrap = h("div", "wrap");
     var ids = type === "wrong" ? store.wrong.slice() : store.good.slice();
     var title = type === "wrong" ? "❌ 错题本" : "⭐ 收藏";
+    var list = ids.map(function (id) { return QMAP[id]; }).filter(Boolean);
+    var groups = groupByChapter(list);
     var t = h("div", "sec-title");
     t.appendChild(document.createTextNode(title));
-    t.appendChild(h("em", null, ids.length + " 道"));
+    t.appendChild(h("em", null, list.length + " 道 · " + groups.length + " 章"));
     wrap.appendChild(t);
 
-    if (!ids.length) {
+    if (!list.length) {
       var es = h("div", "card empty-state");
       es.appendChild(h("div", "ic", type === "wrong" ? "🎉" : "☆"));
       es.appendChild(h("div", null, type === "wrong" ? "还没有错题，继续加油。" : "还没有收藏的题。"));
@@ -1169,9 +1206,8 @@
     var bar = h("div", "row");
     bar.style.marginBottom = "13px";
     bar.style.flexWrap = "wrap";
-    var run = h("button", "btn", "▶ 把这 " + ids.length + " 道做一遍");
-    var list = ids.map(function (id) { return QMAP[id]; }).filter(Boolean);
-    run.onclick = function () { startSession(list, title); };
+    var run = h("button", "btn", "▶ 把这 " + list.length + " 道做一遍");
+    run.onclick = function () { startSession(list.slice(), title); };
     bar.appendChild(run);
     if (type === "wrong") {
       var clr = h("button", "btn ghost sm", "清空错题本");
@@ -1184,7 +1220,10 @@
 
     var holder = h("div");
     wrap.appendChild(holder);
-    list.forEach(function (q, i) { holder.appendChild(renderCard(q, { index: i + 1, revealed: true })); });
+    groups.forEach(function (g) {
+      holder.appendChild(chapterGroupBar(g, type));
+      g.list.forEach(function (q, i) { holder.appendChild(renderCard(q, { index: i + 1, revealed: true })); });
+    });
     app.appendChild(wrap);
   }
 

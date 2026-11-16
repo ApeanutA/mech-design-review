@@ -438,3 +438,23 @@ input[type=range] { width: 100%; accent-color: var(--pri); }
 .ex-idea .ei-tip { margin-top: 10px; padding-left: 10px; border-left: 3px solid #e0a800;
   line-height: 1.8; font-size: 13px; }
 @media print { .ex-idea { break-inside: avoid; } }
+
+/* ---------- 错题本 / 收藏：按章节分组 ---------- */
+.ch-group {
+  display: flex; align-items: center; gap: 9px; flex-wrap: wrap;
+  margin: 26px 0 12px; padding-bottom: 8px;
+  border-bottom: 2px solid var(--line);
+}
+.ch-group:first-child { margin-top: 8px; }
+.ch-group .cg-no { font-size: 15.5px; font-weight: 700; }
+.ch-group .cg-nm { font-size: 13.5px; color: var(--sub); }
+.ch-group .cg-ct {
+  font-style: normal; font-size: 12px; line-height: 1.6;
+  color: var(--pri); background: var(--pri-soft);
+  padding: 1px 9px; border-radius: 20px;
+}
+.ch-group .cg-run { margin-left: auto; }
+@media print {
+  .ch-group { break-after: avoid; }
+  .ch-group .cg-run { display: none !important; }
+}
