@@ -896,8 +896,13 @@
       wrap.appendChild(p);
     });
 
-    /* 该题的解题思路（数据来自 data/notes.js 的 exam 数组，按 tag「例N」对应） */
+    /* 该题的题中符号、看图与画图、解题思路（符号与看图数据来自 data/exnote.js，按「章-例」索引） */
     var nc = notesChapter(ch.no);
+    var exn = (window.EXNOTE || {})[ch.no + "-" + ex.no];
+    if (exn) {
+      var sc = exSyms(exn); if (sc) wrap.appendChild(sc);
+      var fc = exFig(exn); if (fc) wrap.appendChild(fc);
+    }
     if (nc && nc.exam && nc.exam.length) {
       nc.exam.forEach(function (e) {
         if (e.tag === "例" + ex.no) wrap.appendChild(exIdea(e));
@@ -905,6 +910,51 @@
     }
 
     app.appendChild(wrap);
+  }
+
+  /* 例题详情页 · 题中符号（e.syms: [{s,d}]） */
+  function exSyms(e) {
+    if (!e.syms || !e.syms.length) return null;
+    var d = h("div", "card ex-syms");
+    var hd = h("div", "ei-h");
+    hd.appendChild(h("span", "ei-tag ei-tag-g", "题中符号"));
+    hd.appendChild(h("span", "ei-t", "本题出现的符号与含义"));
+    d.appendChild(hd);
+    var tb = h("table", "nsym");
+    var tr = h("tr");
+    tr.appendChild(h("th", null, "符号"));
+    tr.appendChild(h("th", null, "含义"));
+    tb.appendChild(tr);
+    e.syms.forEach(function (it) {
+      var r = h("tr");
+      var c1 = h("td"); c1.innerHTML = mathHtml(it.s || "");
+      var c2 = h("td"); c2.innerHTML = mathHtml(it.d || "");
+      r.appendChild(c1); r.appendChild(c2);
+      tb.appendChild(r);
+    });
+    d.appendChild(tb);
+    return d;
+  }
+
+  /* 例题详情页 · 看图与画图（e.figs: [{t,s}] 或纯字符串数组） */
+  function exFig(e) {
+    if (!e.figs || !e.figs.length) return null;
+    var d = h("div", "card ex-fig");
+    var hd = h("div", "ei-h");
+    hd.appendChild(h("span", "ei-tag ei-tag-y", "看图 · 画图"));
+    hd.appendChild(h("span", "ei-t", "怎么读这张图，自己画时先画什么"));
+    d.appendChild(hd);
+    var ol = h("ol", "ei-steps");
+    e.figs.forEach(function (it) {
+      var li = h("li");
+      if (typeof it === "string") li.innerHTML = mathHtml(it);
+      else {
+        li.innerHTML = mathHtml((it.t ? "**" + it.t + "**　" : "") + (it.s || ""));
+      }
+      ol.appendChild(li);
+    });
+    d.appendChild(ol);
+    return d;
   }
 
   /* 例题详情页 · 单题解题思路 */

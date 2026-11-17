@@ -427,19 +427,31 @@ input[type=range] { width: 100%; accent-color: var(--pri); }
 .npt { border-left: 3px solid var(--pri); }
 .np-key { margin-top: 4px; font-size: 12.5px; color: var(--pri); line-height: 1.7; }
 
-/* 例题详情页 · 单题解题思路 */
-.ex-idea { margin-top: 16px; padding: 16px 18px; }
-.ex-idea .ei-h { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
-.ex-idea .ei-tag { flex: none; padding: 2px 9px; border-radius: 999px; font-size: 12px;
+/* 例题详情页 · 题中符号 / 看图画图 / 单题解题思路 */
+.ex-idea, .ex-syms, .ex-fig { margin-top: 16px; padding: 16px 18px; }
+.ex-idea .ei-h, .ex-syms .ei-h, .ex-fig .ei-h {
+  display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+.ex-idea .ei-tag, .ex-syms .ei-tag, .ex-fig .ei-tag {
+  flex: none; padding: 2px 9px; border-radius: 999px; font-size: 12px;
   background: var(--pri); color: #fff; }
-.ex-idea .ei-t { font-size: 15.5px; font-weight: 600; line-height: 1.6; }
-.ex-idea ol.ei-steps { margin: 8px 0 0; padding-left: 22px; line-height: 1.9; }
+.ex-syms .ei-tag-g { background: #2f7d5b; }
+.ex-fig .ei-tag-y { background: #b07a12; }
+.ex-idea .ei-t, .ex-syms .ei-t, .ex-fig .ei-t {
+  font-size: 15.5px; font-weight: 600; line-height: 1.6; }
+.ex-idea ol.ei-steps, .ex-fig ol.ei-steps {
+  margin: 8px 0 0; padding-left: 22px; line-height: 1.9; }
+.ex-fig ol.ei-steps li { margin-bottom: 7px; }
 .ex-idea .ei-f { margin-top: 10px; padding: 10px 12px; border-radius: 8px;
   background: rgba(127, 127, 127, .07); line-height: 2; }
 .ex-idea .ei-f b { display: block; margin-bottom: 4px; }
 .ex-idea .ei-tip { margin-top: 10px; padding-left: 10px; border-left: 3px solid #e0a800;
   line-height: 1.8; font-size: 13px; }
-@media print { .ex-idea { break-inside: avoid; } }
+.ex-syms table.nsym { margin-top: 4px; }
+@media print {
+  .ex-idea, .ex-syms, .ex-fig { break-inside: avoid; }
+  .ex-syms .ei-tag-g, .ex-fig .ei-tag-y { background: #fff !important; color: #000 !important;
+    border: 1px solid #999; }
+}
 
 /* ---------- 错题本 / 收藏：按章节分组（整章可折叠） ---------- */
 .ch-group { margin: 14px 0 0; }
