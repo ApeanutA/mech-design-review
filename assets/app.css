@@ -441,13 +441,22 @@ input[type=range] { width: 100%; accent-color: var(--pri); }
   line-height: 1.8; font-size: 13px; }
 @media print { .ex-idea { break-inside: avoid; } }
 
-/* ---------- 错题本 / 收藏：按章节分组 ---------- */
-.ch-group {
-  display: flex; align-items: center; gap: 9px; flex-wrap: wrap;
-  margin: 26px 0 12px; padding-bottom: 8px;
-  border-bottom: 2px solid var(--line);
-}
+/* ---------- 错题本 / 收藏：按章节分组（整章可折叠） ---------- */
+.ch-group { margin: 14px 0 0; }
 .ch-group:first-child { margin-top: 8px; }
+.ch-group .cg-head {
+  display: flex; align-items: center; gap: 9px; flex-wrap: wrap;
+  padding: 10px 13px; border: 1px solid var(--line); border-radius: 10px;
+  background: var(--card); cursor: pointer; user-select: none;
+  transition: background .15s, border-color .15s;
+}
+.ch-group .cg-head:hover { background: var(--pri-soft); }
+.ch-group.open .cg-head { border-color: var(--pri); }
+.ch-group .cg-caret {
+  width: 12px; font-size: 11px; color: var(--pri);
+  transition: transform .18s;
+}
+.ch-group.open .cg-caret { transform: rotate(90deg); }
 .ch-group .cg-no { font-size: 15.5px; font-weight: 700; }
 .ch-group .cg-nm { font-size: 13.5px; color: var(--sub); }
 .ch-group .cg-ct {
@@ -456,9 +465,12 @@ input[type=range] { width: 100%; accent-color: var(--pri); }
   padding: 1px 9px; border-radius: 20px;
 }
 .ch-group .cg-run { margin-left: auto; }
+.ch-group .cg-body { padding: 4px 0 6px; }
 @media print {
   .ch-group { break-after: avoid; }
   .ch-group .cg-run { display: none !important; }
+  .ch-group .cg-body { display: block !important; }
+  .ch-group .cg-head { cursor: default; }
 }
 
 /* ---------- 本章符号表 ---------- */

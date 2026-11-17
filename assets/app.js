@@ -1223,17 +1223,38 @@
     return groups;
   }
 
-  function chapterGroupBar(g, type) {
-    var gt = h("div", "ch-group");
-    gt.appendChild(h("span", "cg-no", "第 " + g.no + " 章"));
-    if (g.name) gt.appendChild(h("span", "cg-nm", g.name));
-    gt.appendChild(h("em", "cg-ct", g.list.length + " 道"));
-    var b = h("button", "btn ghost sm cg-run", "▶ 只做本章");
-    b.onclick = function () {
+  /* 折叠状态：type + ":" + 章号 → true 表示展开；未记录时按默认值 */
+  var chOpen = {};
+
+  /* 一章 = 可折叠表头 + 题目列表；点表头任意处（除"只做本章"按钮）开合 */
+  function chapterGroupBox(g, type, defOpen) {
+    var key = type + ":" + g.no;
+    var isOpen = chOpen[key] === undefined ? !!defOpen : chOpen[key];
+    var box = h("div", "ch-group");
+    var head = h("div", "cg-head");
+    head.appendChild(h("span", "cg-caret", "▸"));
+    head.appendChild(h("span", "cg-no", "第 " + g.no + " 章"));
+    if (g.name) head.appendChild(h("span", "cg-nm", g.name));
+    head.appendChild(h("em", "cg-ct", g.list.length + " 道"));
+    var b = h("button", "btn ghost sm cg-run", "只做本章");
+    b.onclick = function (ev) {
+      if (ev && ev.stopPropagation) ev.stopPropagation();
       startSession(g.list.slice(), "第" + g.no + "章 · " + (g.name || "") + (type === "wrong" ? " · 错题" : " · 收藏"));
     };
-    gt.appendChild(b);
-    return gt;
+    head.appendChild(b);
+    var body = h("div", "cg-body");
+    g.list.forEach(function (q, i) { body.appendChild(renderCard(q, { index: i + 1, revealed: true })); });
+    body.style.display = isOpen ? "" : "none";
+    if (isOpen) box.classList.add("open");
+    head.onclick = function () {
+      var now = !(chOpen[key] === undefined ? !!defOpen : chOpen[key]);
+      chOpen[key] = now;
+      body.style.display = now ? "" : "none";
+      box.classList.toggle("open", now);
+    };
+    box.appendChild(head);
+    box.appendChild(body);
+    return box;
   }
 
   function viewCollection(app, type) {
@@ -1243,6 +1264,11 @@
     var title = type === "wrong" ? "❌ 错题本" : "⭐ 收藏";
     var list = ids.map(function (id) { return QMAP[id]; }).filter(Boolean);
     var groups = groupByChapter(list);
+    var defOpen = groups.length === 1;   /* 只有一章默认展开；多章默认收起，一屏看完章数 */
+    var isOpenNow = function (g) {
+      var k = type + ":" + g.no;
+      return chOpen[k] === undefined ? defOpen : chOpen[k];
+    };
     var t = h("div", "sec-title");
     t.appendChild(document.createTextNode(title));
     t.appendChild(h("em", null, list.length + " 道 · " + groups.length + " 章"));
@@ -1263,6 +1289,15 @@
     var run = h("button", "btn", "▶ 把这 " + list.length + " 道做一遍");
     run.onclick = function () { startSession(list.slice(), title); };
     bar.appendChild(run);
+
+    var anyClosedNow = groups.some(function (g) { return !isOpenNow(g); });
+    var allBtn = h("button", "btn ghost sm", anyClosedNow ? "展开全部" : "收起全部");
+    allBtn.onclick = function () {
+      var anyClosed = groups.some(function (g) { return !isOpenNow(g); });
+      groups.forEach(function (g) { chOpen[type + ":" + g.no] = anyClosed; });
+      render();
+    };
+    bar.appendChild(allBtn);
     if (type === "wrong") {
       var clr = h("button", "btn ghost sm", "清空错题本");
       clr.onclick = function () {
@@ -1274,10 +1309,7 @@
 
     var holder = h("div");
     wrap.appendChild(holder);
-    groups.forEach(function (g) {
-      holder.appendChild(chapterGroupBar(g, type));
-      g.list.forEach(function (q, i) { holder.appendChild(renderCard(q, { index: i + 1, revealed: true })); });
-    });
+    groups.forEach(function (g) { holder.appendChild(chapterGroupBox(g, type, defOpen)); });
     app.appendChild(wrap);
   }
 
