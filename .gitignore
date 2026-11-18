@@ -2,3 +2,4 @@ _chrome-prof/
 _test.html
 _v*.png
 _check/
+tools/__pycache__/

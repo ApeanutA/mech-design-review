@@ -404,9 +404,9 @@
     function showAnswer() {
       var info = QDATA.answerImgs && QDATA.answerImgs[q.id];
       if (info) {
-        /* 填空/简答题的答案里有公式，PDF 文字层里是碎的
-           （tanλ/tan(λ+φv) 会变成 ")tan(tanvφλλ+"），所以以原图为准，
-           碎掉的文字版收进折叠里，要复制时再展开。 */
+        /* 填空/简答题的答案里有公式，PDF 文字层里往往是碎的
+           （tanλ/tan(λ+φv) 会变成 ")tan(tanvφλλ+"），所以以原图为准；
+           文字版收进折叠里，人工校订过的（含 $...$）会正常排版。 */
         ansBox.className = "ans";
         ansBox.innerHTML = "";
         var fig = h("div", "ans-fig");
@@ -425,10 +425,14 @@
           var det = document.createElement("details");
           det.className = "ans-raw";
           var sm = document.createElement("summary");
-          sm.textContent = "文字版（公式可能已散架）";
+          /* 含 $...$ 的说明是人工校订过的 LaTeX，可以直接渲染；
+             没有的仍是 PDF 文字层原文，公式可能已散架，如实标出来。 */
+          sm.textContent = /\$[^$]+\$/.test(q.answer)
+            ? "文字版（可复制，公式已排版）"
+            : "文字版（公式可能已散架）";
           det.appendChild(sm);
           var pre = h("div", "raw");
-          pre.textContent = q.answer;
+          pre.innerHTML = mathHtml(q.answer);
           det.appendChild(pre);
           ansBox.appendChild(det);
         }
