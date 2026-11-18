@@ -141,9 +141,19 @@ def main():
         nxt = anchors[i + 1]["mark"] if i + 1 < len(anchors) else None
         end = min(x for x in (nxt, seg_end) if x is not None)
 
-        chars = rows[a["begin"]:end]
+        # 从题号 mark 起裁，而不是 begin：begin 在「2．」之后，题号本身的 bbox
+        # 会留一截在框外，图上左上角就粘出半颗墨点。
+        chars = rows[a["mark"]:end]
         if not chars:
             skipped.append((a["ch"], a["kind"], a["no"], "空区间"))
+            continue
+
+        # 纯空白字符也占一个 bbox，会被并进裁剪框：跨页答案里夹进页脚那一格空格，
+        # 就把整页高度框进来、右边又只切到空格所在的列 —— c13-short-2 就是这么废的
+        # （图右侧被切掉、下面混进第十四/十五章）。空白本身不可见，直接丢掉。
+        chars = [c for c in chars if c[2].strip()]
+        if not chars:
+            skipped.append((a["ch"], a["kind"], a["no"], "只有空白"))
             continue
 
         by_page = {}
