@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """渲染例题 PDF 页面为 WebP，并生成 data/examples.json。
 
-- 渲染全部页（工具里可看任意例题），200% 缩放后压 WebP，清晰且体积小
-- wanted 范围标注为「考点例题」（用户给的期末范围）
+- 渲染全部页（工具里可看任意例题），按 ZOOM 缩放到 1200px 宽后压 WebP
+- wanted 范围标注为「考点例题」，starred 再叠一颗 ★（用户自己点的高危题）
 - 设环境变量 SKIP_RENDER=1 可只重建 examples.json、复用已有图片
 """
 import json
@@ -21,6 +21,8 @@ WEBP_Q = 82
 
 # 用户给的期末大题范围（已人工核对页码）
 WANTED = {3: [1, 4], 5: [4, 5, 6, 7], 10: [1, 2, 4, 5, 8], 11: [1, 2], 13: [1, 3]}
+# 用户自己点出来的「感觉会考」（★ 重点）：在这 9 道上再叠一颗星
+STARRED = {3: [4], 5: [4, 6, 7], 10: [1, 4, 8], 11: [1], 13: [1]}
 # 老师标注
 NOTE = {(10, 2): "老师标注：了解即可"}
 # 人工修正：例2 的解答延续到 p51（该页另有例3，多给一页无害）
@@ -129,8 +131,12 @@ def main():
             "no": ex,
             "pages": pgs,
             "imgs": [f"img/ex/p{p:03d}.webp" for p in pgs],
+            # 每张图的像素尺寸，前端用它给 <img> 预留 placehold 高度，
+            # 图片没到之前也不会塌成 0 高（避免打开页面时整页往下跳）
+            "dim": [[rendered[p]["w"], rendered[p]["h"]] for p in pgs],
             "title": titles.get(key, ""),
             "exam": ex in WANTED.get(chap, []),
+            "star": ex in STARRED.get(chap, []),
             "note": NOTE.get((chap, ex), ""),
         })
     out = {"chapters": [], "pages": rendered}
@@ -145,7 +151,8 @@ def main():
         json.dump(out, f, ensure_ascii=False, indent=1)
 
     n_exam = sum(1 for c in out["chapters"] for e in c["examples"] if e["exam"])
-    print(f"例题 {sum(len(c['examples']) for c in out['chapters'])} 道，其中考点 {n_exam} 道")
+    n_star = sum(1 for c in out["chapters"] for e in c["examples"] if e.get("star"))
+    print(f"例题 {sum(len(c['examples']) for c in out['chapters'])} 道，其中考点 {n_exam} 道、标星 {n_star} 道")
     print("写出 data/examples.json")
 
 

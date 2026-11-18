@@ -291,7 +291,7 @@
     /* 考点例题 */
     var t2 = h("div", "sec-title");
     t2.appendChild(document.createTextNode("🔥 期末大题范围（考点例题）"));
-    t2.appendChild(h("em", null, EX.examCount + " 道"));
+    t2.appendChild(h("em", null, EX.examCount + " 道" + (EX.starCount ? " · ★ 重点 " + EX.starCount + " 道" : "")));
     wrap.appendChild(t2);
 
     var eg = h("div", "grid");
@@ -299,6 +299,7 @@
       ch.examples.filter(function (e) { return e.exam; }).forEach(function (e) {
         var c = h("button", "card ex-card");
         c.appendChild(h("span", "badge", "第" + ch.no + "章"));
+        if (e.star) c.appendChild(h("span", "badge star", "★"));
         var box = h("div");
         box.appendChild(h("div", "t", "例 " + e.no + " · " + exTitle(ch, e)));
         box.appendChild(h("div", "d", e.pages.length + " 页原图" + (e.note ? " · " + e.note : "")));
@@ -311,6 +312,7 @@
 
     wrap.appendChild(aiDisclaimer());
     app.appendChild(wrap);
+    warmStars();
   }
 
   /* ================= 章节练习 ================= */
@@ -845,7 +847,7 @@
 
     if (!chNo) {
       wrap.appendChild(h("div", "sec-title", "🔥 期末大题范围"));
-      wrap.appendChild(h("p", "small muted", "按老师给的范围列出考点例题；点进去看原题与解答原图（考试会改数字，重点看解题步骤）。"));
+      wrap.appendChild(h("p", "small muted", "按老师给的范围列出考点例题；点进去看原题与解答原图（考试会改数字，重点看解题步骤）。带 " + "★" + " 的是你认为最可能考、建议优先练的 " + (EX.starCount || 0) + " 道。"));
       EX.chapters.forEach(function (ch) {
         var t = h("div", "sec-title");
         t.appendChild(document.createTextNode("第 " + ch.no + " 章 " + ch.name));
@@ -853,7 +855,8 @@
         var g = h("div", "grid");
         ch.examples.forEach(function (e) {
           var c = h("button", "card ex-card");
-          if (e.exam) c.appendChild(h("span", "badge", "考点"));
+          if (e.star) c.appendChild(h("span", "badge star", "★ 重点"));
+          else if (e.exam) c.appendChild(h("span", "badge", "考点"));
           else c.appendChild(h("span", "badge", "了解"));
           var box = h("div");
           box.appendChild(h("div", "t", "例 " + e.no));
@@ -882,7 +885,7 @@
     wrap.appendChild(crumb);
 
     var head = h("div", "card panel");
-    head.appendChild(h("div", "sec-title", "第" + ch.no + "章 例" + ex.no + (ex.exam ? " · 考点" : "")));
+    head.appendChild(h("div", "sec-title", "第" + ch.no + "章 例" + ex.no + (ex.star ? " · ★ 重点" : (ex.exam ? " · 考点" : ""))));
     if (ex.title) head.appendChild(h("p", null, ex.title));
     head.appendChild(h("p", "small muted",
       "共 " + ex.pages.length + " 页原图。考试为大题改数，照原题练熟步骤即可。" + (ex.note ? "（" + ex.note + "）" : "")));
@@ -891,13 +894,24 @@
     ex.imgs.forEach(function (src, i) {
       var p = h("div", "card ex-page");
       var img = h("img");
+      var dm = (ex.dim && ex.dim[i]) || [1440, 1080];
+      /* 先按真实像素比把位置占住：图片慢的时候页面不会塌，也不会加载完就往下蹦 */
+      img.width = dm[0];
+      img.height = dm[1];
       img.src = src;
       img.alt = "第 " + ch.no + " 章 例 " + ex.no + " 第 " + (i + 1) + " 页";
       img.loading = i === 0 ? "eager" : "lazy";
+      img.decoding = "async";
+      /* 第一页立刻要，后面的交给浏览器按需取 */
+      if (i === 0) img.setAttribute("fetchpriority", "high");
       img.onclick = function () { lightbox(src); };
       p.appendChild(img);
       p.appendChild(h("div", "cap", "原书第 " + ex.pages[i] + " 页（点击放大）"));
       wrap.appendChild(p);
+      /* 第一张到了就把剩下的排进预取队列，翻页时不用再等 TTFB */
+      if (i === 0) {
+        img.addEventListener("load", function () { prefetchEx(ex, 1); }, { once: true });
+      }
     });
 
     /* 该题的题中符号、看图与画图、解题思路（符号与看图数据来自 data/exnote.js，按「章-例」索引） */
@@ -982,6 +996,54 @@
     }
     if (e.tip) d.appendChild(nLine("ei-tip", "⚠ " + e.tip));
     return d;
+  }
+
+  /* 图片预取：第一张到手后再按顺序把同一题的其余页拉下来。
+     只预热浏览器缓存（GitHub Pages 给 Cache-Control: max-age=600），
+     不改任何图片本体，也不占带宽优先级（用 Image() 而不是 fetch，避免阻塞关键请求）。 */
+  function prefetchEx(ex, from) {
+    if (!ex || !ex.imgs) return;
+    ex.imgs.slice(from).forEach(function (src, k) {
+      /* 稍错开一点，别和首页剩下的关键资源抢带宽 */
+      setTimeout(function () { var im = new Image(); im.decoding = "async"; im.src = src; }, 180 * (k + 1));
+    });
+  }
+
+  /* ================= 离线缓存（Service Worker） =================
+     第一次访问照旧走网络；之后的图片/字体/数据全从本地读，
+     绕开 GitHub Pages 每请求 2~3 秒的 TTFB。图片本体未做任何改动。
+     注意：file:// 打开时浏览器不允许注册 SW，自动跳过（不影响功能）。 */
+  function registerSW() {
+    if (!("serviceWorker" in navigator)) return;
+    if (location.protocol !== "http:" && location.protocol !== "https:") return;
+    window.addEventListener("load", function () {
+      navigator.serviceWorker.register("sw.js").catch(function () {});
+    });
+  }
+
+  /* 空闲预取：在首页/例题列表停留时，把 ★ 重点题的第一页图提前拉进缓存。
+     这样点进去是瞬间显示，而不是先等 2~3 秒 TTFB。
+     只在「用户没开省流量 + 网络不是 2G」时做，且等页面彻底空闲 2.5 秒后才动手，
+     不会跟首屏抢带宽。图片本体不改动，纯粹是提前下载。 */
+  function warmStars() {
+    var c = navigator.connection;
+    if (c && (c.saveData || /(^|-)2g$/.test(c.effectiveType || ""))) return;
+    var urls = [];
+    EX.chapters.forEach(function (ch) {
+      ch.examples.forEach(function (e) {
+        if (e.star && e.imgs && e.imgs[0]) urls.push(e.imgs[0]);
+      });
+    });
+    if (!urls.length) return;
+    var start = function () {
+      urls.forEach(function (src, k) {
+        setTimeout(function () { var im = new Image(); im.decoding = "async"; im.src = src; }, 400 * k);
+      });
+    };
+    setTimeout(function () {
+      if (window.requestIdleCallback) requestIdleCallback(start, { timeout: 3000 });
+      else start();
+    }, 2500);
   }
 
   function lightbox(src) {
@@ -1376,6 +1438,7 @@
     document.getElementById("brandBtn").onclick = function () { go("#/"); };
     window.addEventListener("hashchange", render);
     render();
+    registerSW();
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
