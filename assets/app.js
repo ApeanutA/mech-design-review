@@ -185,6 +185,7 @@
     if (p[0] === "ch") return viewChapter(app, +p[1], p[2]);
     if (p[0] === "quiz") return viewQuizSetup(app, p[1] === "wrong" ? "wrong" : "all");
     if (p[0] === "notes") return viewNotes(app, p[1]);
+    if (p[0] === "recite") return viewRecite(app, p[1]);
     if (p[0] === "run") return viewSession(app);
     if (p[0] === "exam") return viewExam(app, p[1] ? +p[1] : null, p[2] ? +p[2] : null);
     if (p[0] === "wrong") return viewCollection(app, "wrong");
@@ -196,7 +197,7 @@
     var nav = document.getElementById("nav");
     nav.innerHTML = "";
     [["#/", "章节", ""], ["#/quiz", "抽题训练", "quiz"],
-     ["#/notes", "知识点", "notes"],
+     ["#/notes", "知识点", "notes"], ["#/recite", "背诵", "recite"],
      ["#/exam", "大题原图", "exam"], ["#/wrong", "错题本", "wrong"],
      ["#/good", "收藏", "good"]].forEach(function (it) {
       var b = h("button", null, it[1]);
@@ -267,6 +268,28 @@
       wrap.appendChild(nb);
     }
 
+    /* 简答题背诵入口 */
+    var RA = recitAll();
+    if (RA.length) {
+      var tg = h("div", "sec-title");
+      tg.appendChild(document.createTextNode("📖 简答题背诵"));
+      tg.appendChild(h("em", null, "只看题目先想答案 · 可打印"));
+      wrap.appendChild(tg);
+      var rb = h("button", "card notes-entry");
+      var rbL = h("div", "ne-l");
+      rbL.appendChild(h("h3", null, "题目 × 答案成对 · 连背模式 · 打印区"));
+      rbL.appendChild(h("div", "meta", "共 " + RA.length + " 道简答题，覆盖 " +
+        recitGroups().length + " 章；★ 标记记录背熟进度"));
+      rb.appendChild(rbL);
+      var rbR = h("div", "ne-r");
+      var doneN0 = RA.filter(function (q) { return store.good.indexOf(q.id) >= 0; }).length;
+      rbR.appendChild(h("span", "badge", "已背熟 " + doneN0 + " / " + RA.length));
+      rbR.appendChild(h("span", "go-arrow", "去背 →"));
+      rb.appendChild(rbR);
+      rb.onclick = function () { go("#/recite"); };
+      wrap.appendChild(rb);
+    }
+
     /* 章节 */
     var t1 = h("div", "sec-title");
     t1.appendChild(document.createTextNode("📘 分章节刷题"));
@@ -320,6 +343,232 @@
     wrap.appendChild(aiDisclaimer());
     app.appendChild(wrap);
     warmStars();
+  }
+
+  /* ================= 背诵（简答题专项） ================= */
+  /* 取全部简答题，按章分组。用于「背诵」分区：只看题面 → 想答案 → 翻面对照，
+     和刷题页不同，不带选项、不判对错，目的就是背。 */
+  function recitGroups() {
+    var out = [];
+    Q.chapters.forEach(function (ch) {
+      var list = questionsOf(ch.no, "short");
+      if (list.length) out.push({ no: ch.no, name: ch.name, list: list });
+    });
+    return out;
+  }
+  function recitAll() {
+    var out = [];
+    recitGroups().forEach(function (g) {
+      g.list.forEach(function (q) { out.push(q); });
+    });
+    return out;
+  }
+
+  /* 一张背诵卡：正面是题面，点「看答案」翻出答案（答案含 LaTeX 会正常排版）。
+     题干本身也能点，方便一只手翻。 */
+  function recitCard(q, idx, chName) {
+    var card = h("div", "card rc");
+    var head = h("div", "rc-head");
+    head.appendChild(h("span", "rc-no", "第 " + idx + " 题"));
+    if (chName) head.appendChild(h("span", "rc-ch", chName));
+    var mark = h("button", "btn ghost sm", store.good.indexOf(q.id) >= 0 ? "★ 已背熟" : "☆ 标记");
+    mark.style.marginLeft = "auto";
+    mark.onclick = function (e) {
+      if (e && e.stopPropagation) e.stopPropagation();
+      toggleGood(q.id);
+      mark.textContent = store.good.indexOf(q.id) >= 0 ? "★ 已背熟" : "☆ 标记";
+    };
+    head.appendChild(mark);
+    card.appendChild(head);
+
+    var stem = h("div", "rc-stem");
+    stem.innerHTML = stemHtml(q.stem);
+    card.appendChild(stem);
+
+    var ans = h("div", "rc-ans");
+    ans.style.display = "none";
+    ans.innerHTML = q.answer ? mathHtml(q.answer) : "（原书此处无参考答案）";
+    card.appendChild(ans);
+
+    var foot = h("div", "foot");
+    var btn = h("button", "btn sm", "看答案");
+    btn.onclick = function (e) {
+      if (e && e.stopPropagation) e.stopPropagation();
+      var show = ans.style.display === "none";
+      ans.style.display = show ? "" : "none";
+      btn.textContent = show ? "收起答案" : "看答案";
+      card.classList.toggle("open", show);
+    };
+    foot.appendChild(btn);
+    var raw = h("span", "small muted", "（点题面也能翻）");
+    foot.appendChild(raw);
+    card.appendChild(foot);
+
+    stem.onclick = function () { btn.click(); };
+    return card;
+  }
+
+  function viewRecite(app, arg) {
+    navBar("recite");
+    var wrap = h("div", "wrap");
+    var groups = recitGroups();
+    var all = recitAll();
+
+    /* —— 打印视图：题目与答案成对排版，适合直接印出来背 —— */
+    if (arg === "print") {
+      var ph = h("div", "notes-hero");
+      ph.appendChild(h("h1", null, "机械设计 · 简答题背诵"));
+      ph.appendChild(h("p", null, "共 " + all.length + " 道，按章排列；题目与答案成对。" +
+        "打印后可以先遮住答案自测，再对照。" + ((window.NOTES && window.NOTES.updated) ? "　更新 " + window.NOTES.updated : "")));
+      wrap.appendChild(ph);
+      wrap.appendChild(aiDisclaimer());
+      groups.forEach(function (g) {
+        var sec = h("div", "card rc-sec");
+        var hd = h("div", "nch-h");
+        hd.appendChild(h("span", "nno", "第 " + g.no + " 章"));
+        hd.appendChild(h("h2", null, g.name));
+        sec.appendChild(hd);
+        g.list.forEach(function (q, i) {
+          var it = h("div", "rc-item");
+          var no = h("div", "rc-i-no", "第 " + (i + 1) + " 题");
+          it.appendChild(no);
+          var s = h("div", "rc-i-q"); s.innerHTML = stemHtml(q.stem); it.appendChild(s);
+          var a = h("div", "rc-i-a"); a.innerHTML = q.answer ? mathHtml(q.answer) : "（原书此处无参考答案）";
+          it.appendChild(a);
+          sec.appendChild(it);
+        });
+        wrap.appendChild(sec);
+      });
+      app.appendChild(wrap);
+      return;
+    }
+
+    /* —— 总览 —— */
+    if (!arg) {
+      var hero = h("div", "card notes-hero");
+      hero.appendChild(h("h1", null, "📖 简答题背诵"));
+      hero.appendChild(h("p", null, "只看题目、先自己想答案，点开再对照。共 " + all.length +
+        " 道，覆盖 " + groups.length + " 章；标了 ★ 的会记成「已背熟」。"));
+      wrap.appendChild(hero);
+
+      var bar = h("div", "nbar");
+      var modes = [
+        ["#/recite/flow", "🃏 连背模式", "一题一屏，翻完点下一题"],
+      ];
+      modes.forEach(function (m) {
+        var b = h("button", "btn", m[1]);
+        b.onclick = function () { go(m[0]); };
+        bar.appendChild(b);
+      });
+      var pr = h("button", "btn ghost", "🖨 打印 / 存为 PDF");
+      pr.onclick = function () { go("#/recite/print"); setTimeout(function () { window.print(); }, 500); };
+      bar.appendChild(pr);
+      wrap.appendChild(bar);
+
+      var grid = h("div", "grid");
+      groups.forEach(function (g) {
+        var c = h("button", "card ch-card");
+        c.appendChild(h("span", "no", "第 " + g.no + " 章"));
+        c.appendChild(h("h3", null, g.name));
+        c.appendChild(h("div", "meta", g.list.length + " 道简答"));
+        var done = g.list.filter(function (q) { return store.good.indexOf(q.id) >= 0; }).length;
+        var pbar = h("div", "ch-bar"); var ii = h("i");
+        ii.style.width = (done / g.list.length * 100) + "%";
+        pbar.appendChild(ii); c.appendChild(pbar);
+        c.appendChild(h("div", "meta", "已背熟 " + done + " / " + g.list.length));
+        c.onclick = function () { go("#/recite/" + g.no); };
+        grid.appendChild(c);
+      });
+      wrap.appendChild(grid);
+      wrap.appendChild(aiDisclaimer());
+      app.appendChild(wrap);
+      return;
+    }
+
+    /* —— 连背模式：一题一屏 —— */
+    if (arg === "flow") {
+      var i = parseInt(localStorage.getItem("reciteIdx") || "0", 10);
+      if (!(i >= 0)) i = 0;
+      if (i >= all.length) i = 0;
+      var q = all[i];
+
+      var crumb0 = h("div", "crumb");
+      var back = h("button", null, "← 背诵总览");
+      back.onclick = function () { go("#/recite"); };
+      crumb0.appendChild(back);
+      crumb0.appendChild(document.createTextNode("/ 连背 " + (i + 1) + " / " + all.length));
+      wrap.appendChild(crumb0);
+
+      var gname = "";
+      groups.forEach(function (g) {
+        if (g.list.indexOf(q) >= 0) gname = "第" + g.no + "章 " + g.name;
+      });
+      wrap.appendChild(recitCard(q, i + 1, gname));
+
+      var ctl = h("div", "row");
+      ctl.style.marginTop = "13px";
+      ctl.style.flexWrap = "wrap";
+      var prev = h("button", "btn ghost", "← 上一题");
+      prev.disabled = i === 0;
+      prev.onclick = function () {
+        localStorage.setItem("reciteIdx", String(Math.max(0, i - 1))); render();
+      };
+      var next = h("button", "btn", i + 1 >= all.length ? "回到第一题" : "下一题 →");
+      next.onclick = function () {
+        localStorage.setItem("reciteIdx", String((i + 1) % all.length)); render();
+      };
+      var rnd = h("button", "btn ghost sm", "🎲 随机一题");
+      rnd.onclick = function () {
+        localStorage.setItem("reciteIdx", String(Math.floor(Math.random() * all.length))); render();
+      };
+      ctl.appendChild(prev); ctl.appendChild(next); ctl.appendChild(rnd);
+      wrap.appendChild(ctl);
+      wrap.appendChild(aiDisclaimer());
+      app.appendChild(wrap);
+      return;
+    }
+
+    /* —— 单章：全部题目列出，逐题翻 —— */
+    var no = +arg;
+    var g = null;
+    groups.forEach(function (x) { if (x.no === no) g = x; });
+    if (!g) { go("#/recite"); return; }
+
+    var crumb = h("div", "crumb");
+    var b1 = h("button", null, "← 背诵总览");
+    b1.onclick = function () { go("#/recite"); };
+    crumb.appendChild(b1);
+    crumb.appendChild(document.createTextNode("/ 第 " + g.no + " 章 " + g.name));
+    wrap.appendChild(crumb);
+
+    var ttl = h("div", "sec-title");
+    ttl.appendChild(document.createTextNode("第 " + g.no + " 章 " + g.name));
+    ttl.appendChild(h("em", null, g.list.length + " 道"));
+    wrap.appendChild(ttl);
+
+    var tools = h("div", "row");
+    tools.style.marginBottom = "13px";
+    tools.style.flexWrap = "wrap";
+    var openAll = h("button", "btn ghost sm", "全部展开");
+    var opened = false;
+    openAll.onclick = function () {
+      opened = !opened;
+      [].forEach.call(wrap.querySelectorAll(".rc-ans"), function (x) {
+        x.style.display = opened ? "" : "none";
+      });
+      [].forEach.call(wrap.querySelectorAll(".rc > .foot .btn.sm"), function (b) {
+        b.textContent = opened ? "收起答案" : "看答案";
+      });
+      openAll.textContent = opened ? "全部收起" : "全部展开";
+    };
+    tools.appendChild(openAll);
+    wrap.appendChild(tools);
+
+    var holder = h("div");
+    wrap.appendChild(holder);
+    g.list.forEach(function (q, i) { holder.appendChild(recitCard(q, i + 1, "")); });
+    wrap.appendChild(aiDisclaimer());
+    app.appendChild(wrap);
   }
 
   /* ================= 章节练习 ================= */

@@ -7,7 +7,7 @@
  * 更新规则：改了 img/ 或 data/ 里的东西，把 VERSION 加一，
  * 旧缓存会在 activate 时自动删掉，不会留下过期图片。
  */
-var VERSION = "f91ae5b5b7";
+var VERSION = "b4a926f4b2";
 var CACHE = "mechdesign-" + VERSION;
 
 /* 预缓存：进站就把这些拿下来，之后浏览全靠本地 */

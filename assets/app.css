@@ -505,3 +505,37 @@ input[type=range] { width: 100%; accent-color: var(--pri); }
 .nsym td:nth-child(2) { line-height: 1.75; }
 .nsym td:last-child { white-space: nowrap; min-width: 4.5em; color: var(--sub); }
 @media print { .nsym tr { break-inside: avoid; } }
+
+/* ---------- 简答题背诵 ---------- */
+.rc { padding: 15px 17px; margin-bottom: 12px; }
+.rc-head { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; margin-bottom: 9px; }
+.rc-no {
+  font-family: var(--mono); font-size: 11.5px; font-weight: 600;
+  color: var(--pri); background: var(--pri-soft); padding: 2px 8px; border-radius: 6px;
+}
+.rc-ch { font-size: 12.5px; color: var(--sub); }
+.rc-stem {
+  font-size: 15.5px; line-height: 1.75; cursor: pointer;
+  padding-bottom: 3px; border-bottom: 1px dashed transparent;
+}
+.rc-stem:hover { border-bottom-color: var(--line); }
+.rc-ans {
+  margin-top: 10px; padding: 11px 13px; border-radius: 9px;
+  background: var(--ok-soft); border-left: 3px solid var(--ok);
+  font-size: 14.5px; line-height: 1.85;
+}
+.rc.open .rc-stem { border-bottom-color: var(--line); }
+.rc .foot { display: flex; align-items: center; gap: 10px; margin-top: 11px; flex-wrap: wrap; }
+
+/* 打印视图 */
+.rc-sec { padding: 15px 17px; margin-bottom: 14px; }
+.rc-item { padding: 9px 0; border-bottom: 1px dashed var(--line); }
+.rc-item:last-child { border-bottom: none; }
+.rc-i-no { font-size: 11.5px; font-weight: 600; color: var(--pri); margin-bottom: 3px; }
+.rc-i-q { font-size: 14.5px; font-weight: 600; line-height: 1.7; }
+.rc-i-a { margin-top: 5px; font-size: 14px; line-height: 1.85; color: var(--text); }
+@media print {
+  .rc-sec { break-inside: auto; }
+  .rc-item { break-inside: avoid; page-break-inside: avoid; }
+  .nbar, .crumb { display: none !important; }
+}
