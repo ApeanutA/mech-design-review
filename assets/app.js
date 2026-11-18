@@ -14,6 +14,10 @@
   var store = { rec: {}, wrong: [], good: [], dark: false };
   var session = null;   // 当前练习会话
 
+  /* 记录「进入当前页面之前的路由」，让详情页的「返回」能回到用户来的地方，
+     而不是一律跳回大题列表。（首页卡片点进例题后，返回应该是首页，不是列表。） */
+  var prevHash = "";
+
   function loadStore() {
     try {
       var raw = localStorage.getItem(KEY);
@@ -163,7 +167,10 @@
   }
 
   /* ================= 路由 ================= */
-  function go(hash) { location.hash = hash; }
+  function go(hash) {
+    prevHash = location.hash || "#/";   // 记住出发页，供详情页「返回」用
+    location.hash = hash;
+  }
   function parseHash() {
     var raw = (location.hash || "#/").replace(/^#\/?/, "");
     return raw.split("/").filter(Boolean);
@@ -878,8 +885,10 @@
     if (!ex) { go("#/exam"); return; }
 
     var crumb = h("div", "crumb");
-    var b = h("button", null, "← 全部例题");
-    b.onclick = function () { go("#/exam"); };
+    /* 返回用户来的页面（首页卡片、章节页或大题列表都记在 prevHash 里），
+       而不是一律跳回大题列表。没有历史时（直接打开链接）退回列表。 */
+    var b = h("button", null, "← 返回");
+    b.onclick = function () { go(prevHash || "#/exam"); };
     crumb.appendChild(b);
     crumb.appendChild(document.createTextNode("/ 第 " + ch.no + " 章 " + ch.name + " / 例 " + ex.no));
     wrap.appendChild(crumb);
